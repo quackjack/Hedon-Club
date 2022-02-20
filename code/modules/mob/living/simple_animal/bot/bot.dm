@@ -955,11 +955,13 @@ Pass a positive integer as an argument to override a bot's default speed.
 		update_icon()
 		. = 1
 
+/*
 /mob/living/simple_animal/bot/ghost()
 	if(stat != DEAD) // Only ghost if we're doing this while alive, the pAI probably isn't dead yet.
 		..()
 	if(paicard && (!client || stat == DEAD))
 		ejectpai(0)
+*/
 
 /mob/living/simple_animal/bot/sentience_act()
 	faction -= "silicon"
