@@ -30,7 +30,7 @@
 	fugitive.forceMove(src)
 	antag.is_captured = TRUE
 	to_chat(fugitive, "<span class='userdanger'>You are thrown into a vast void of bluespace, and as you fall further into oblivion the comparatively small entrance to reality gets smaller and smaller until you cannot see it anymore. You have failed to avoid capture.</span>")
-	fugitive.ghostize(TRUE) //so they cannot suicide, round end stuff.
+	fugitive.ghostize(FALSE) //so they cannot suicide, round end stuff.
 
 /obj/machinery/computer/shuttle/hunter
 	name = "shuttle console"

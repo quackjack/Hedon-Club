@@ -269,7 +269,7 @@ Transfer_mind is there to check if mob is being deleted/not going to have a body
 Works together with spawning an observer, noted above.
 */
 
-/mob/proc/ghostize(can_reenter_corpse = TRUE, special = FALSE, penalize = FALSE, voluntary = FALSE, cryo = FALSE)
+/mob/proc/ghostize(can_reenter_corpse = FALSE, special = FALSE, penalize = FALSE, voluntary = FALSE, cryo = FALSE)
 	var/sig_flags = SEND_SIGNAL(src, COMSIG_MOB_GHOSTIZE, can_reenter_corpse, special, penalize)
 	penalize = !(sig_flags & COMPONENT_DO_NOT_PENALIZE_GHOSTING) && (suiciding || penalize) // suicide squad.
 	voluntary_ghosted = voluntary
@@ -290,6 +290,7 @@ Works together with spawning an observer, noted above.
 			P.respawn_did_cryo = cryo
 	transfer_ckey(ghost, FALSE)
 	ghost.client?.init_verbs()
+	// needs to be done AFTER the ckey transfer, too
 	if(penalize)
 		var/penalty = CONFIG_GET(number/suicide_reenter_round_timer) MINUTES
 		var/roundstart_quit_limit = CONFIG_GET(number/roundstart_suicide_time_limit) MINUTES
@@ -307,13 +308,25 @@ Works together with spawning an observer, noted above.
 			else if(GLOB.client_ghost_timeouts[ghost.ckey] == CANT_REENTER_ROUND)
 				return
 			GLOB.client_ghost_timeouts[ghost.ckey] = max(GLOB.client_ghost_timeouts[ghost.ckey],penalty)
-	// needs to be done AFTER the ckey transfer, too
+	if (!can_reenter_corpse && ghost.ckey)
+		ghost.do_respawn(FALSE)
 	return ghost
 
 /*
 This is the proc mobs get to turn into a ghost. Forked from ghostize due to compatibility issues.
 */
+/mob/living/verb/respawn()
+	set category = "OOC"
+	set name = "Respawn"
+	set desc = "Stop being dead and return to lobby."
 
+	if(stat != DEAD)
+		to_chat(src, "<span class='warning'>You can't Respawn while alive!</span>")
+		return
+	ghostize()
+
+
+/*
 /mob/living/verb/ghost()
 	set category = "OOC"
 	set name = "Ghost"
@@ -381,6 +394,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		if(response != "Ghost")
 			return
 		ghostize(0, penalize = TRUE)
+*/
 
 /mob/dead/observer/Move(NewLoc, direct)
 	if (SEND_SIGNAL(src, COMSIG_MOVABLE_PRE_MOVE, NewLoc) & COMPONENT_MOVABLE_BLOCK_PRE_MOVE)
