@@ -58,24 +58,34 @@
 	LAZYADDASSOC(ignored_images, WEAKREF(ignored), ignoring_image)
 	if(user)
 		ignore_chads(user)
+	ADD_TRAIT(ignored, TRAIT_IGNORED, "[REF(user)]")
 
 /obj/item/clothing/glasses/chameleon/ignoring/proc/unignore_chad(mob/unignored, mob/user)
 	var/weakref = WEAKREF(unignored)
-	var/ignoring_image = LAZYACCESS(ignored_images, weakref)
+	var/ignoring_image = LAZYACCESS(icon = "icons/mob/ignored.dmi", icon_state = "ignored", ignored_images, weakref)
 	user.client.images -= ignoring_image
 	LAZYREMOVE(ignored_images, weakref)
 	if(user)
 		ignore_chads(user)
+	REMOVE_TRAIT(unignored, TRAIT_IGNORED, "[REF(user)]")
 
 /obj/item/clothing/glasses/chameleon/ignoring/proc/ignore_chads(mob/user)
-	for(var/weakref in ignored_images)
+	for(var/datum/weakref/weakref as anything in ignored_images)
 		var/image/ignored_image = ignored_images[weakref]
 		user.client?.images |= ignored_image
+		var/mob/ignored_mob = weakref.resolve()
+		if(!ignored_mob)
+			continue
+		ADD_TRAIT(ignored_mob, TRAIT_IGNORED, "[REF(user)]")
 
 /obj/item/clothing/glasses/chameleon/ignoring/proc/acknowledge_chads(mob/user)
-	for(var/weakref in ignored_images)
+	for(var/datum/weakref/weakref as anything in ignored_images)
 		var/image/ignored_image = ignored_images[weakref]
 		user.client?.images -= ignored_image
+		var/mob/ignored_mob = weakref.resolve()
+		if(!ignored_mob)
+			continue
+		REMOVE_TRAIT(ignored_mob, TRAIT_IGNORED, "[REF(user)]")
 
 /obj/item/clothing/glasses/chameleon/ignoring/proc/client_logged_in(client/logged)
 	ignore_chads(logged.mob)
