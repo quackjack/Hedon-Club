@@ -62,7 +62,7 @@
 
 /obj/item/clothing/glasses/chameleon/ignoring/proc/unignore_chad(mob/unignored, mob/user)
 	var/weakref = WEAKREF(unignored)
-	var/ignoring_image = LAZYACCESS(icon = "icons/mob/ignored.dmi", icon_state = "ignored", ignored_images, weakref)
+	var/ignoring_image = LAZYACCESS(ignored_images, weakref)
 	user.client.images -= ignoring_image
 	LAZYREMOVE(ignored_images, weakref)
 	if(user)

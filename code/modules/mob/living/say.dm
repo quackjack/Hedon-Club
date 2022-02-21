@@ -254,10 +254,10 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	if(istype(speaker, /atom/movable/virtualspeaker))
 		var/atom/movable/virtualspeaker/virtualspeaker = speaker
 		var/atom/maybe_ignored = source
-		if(maybe_ignored && HAS_TRAIT(maybe_ignored, TRAIT_IGNORED, "[REF(src)]"))
+		if(maybe_ignored && HAS_TRAIT_FROM(maybe_ignored, TRAIT_IGNORED, "[REF(src)]"))
 			return
 	else
-		if(HAS_TRAIT(speaker, TRAIT_IGNORED, "[REF(src)]"))
+		if(HAS_TRAIT_FROM(speaker, TRAIT_IGNORED, "[REF(src)]"))
 			return
 	var/deaf_message
 	var/deaf_type
