@@ -229,21 +229,6 @@
 			heating = 5 * TEMPERATURE_DAMAGE_COEFFICIENT
 			if(holder.has_reagent(/datum/reagent/cryostylane))
 				holder.remove_reagent(/datum/reagent/cryostylane, 5)
-			if(isslime(M))
-				heating = rand(5,20)
-		if(15 to 25)
-			heating = 10 * TEMPERATURE_DAMAGE_COEFFICIENT
-			if(isslime(M))
-				heating = rand(10,20)
-		if(25 to 35)
-			heating = 15 * TEMPERATURE_DAMAGE_COEFFICIENT
-			if(isslime(M))
-				heating = rand(15,20)
-		if(35 to INFINITY)
-			heating = 20 * TEMPERATURE_DAMAGE_COEFFICIENT
-			if(isslime(M))
-				heating = rand(20,25)
-	M.adjust_bodytemperature(heating)
 	..()
 
 /datum/reagent/consumable/frostoil
@@ -261,36 +246,7 @@
 			cooling = -10 * TEMPERATURE_DAMAGE_COEFFICIENT
 			if(holder.has_reagent(/datum/reagent/consumable/capsaicin))
 				holder.remove_reagent(/datum/reagent/consumable/capsaicin, 5)
-			if(isslime(M))
-				cooling = -rand(5,20)
-		if(15 to 25)
-			cooling = -20 * TEMPERATURE_DAMAGE_COEFFICIENT
-			if(isslime(M))
-				cooling = -rand(10,20)
-		if(25 to 35)
-			cooling = -30 * TEMPERATURE_DAMAGE_COEFFICIENT
-			if(prob(1))
-				M.emote("shiver")
-			if(isslime(M))
-				cooling = -rand(15,20)
-		if(35 to INFINITY)
-			cooling = -40 * TEMPERATURE_DAMAGE_COEFFICIENT
-			if(prob(5))
-				M.emote("shiver")
-			if(isslime(M))
-				cooling = -rand(20,25)
-	M.adjust_bodytemperature(cooling, 50)
 	..()
-
-/datum/reagent/consumable/frostoil/reaction_turf(turf/T, reac_volume)
-	if(reac_volume >= 5)
-		for(var/mob/living/simple_animal/slime/M in T)
-			M.adjustToxLoss(rand(15,30))
-	if(reac_volume >= 1) // Make Freezy Foam and anti-fire grenades!
-		if(isopenturf(T))
-			var/turf/open/OT = T
-			OT.MakeSlippery(wet_setting=TURF_WET_ICE, min_wet_time=100, wet_time_to_add=reac_volume SECONDS) // Is less effective in high pressure/high heat capacity environments. More effective in low pressure.
-			OT.air.set_temperature(OT.air.return_temperature() - MOLES_CELLSTANDARD*100*reac_volume/OT.air.heat_capacity()) // reduces environment temperature by 5K per unit.
 
 /datum/reagent/consumable/condensedcapsaicin
 	name = "Condensed Capsaicin"
@@ -745,9 +701,6 @@
 		M.Unconscious(40, 0)
 		. = 1
 	if(prob(20))
-		M.losebreath += 4
-		M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 2*REAGENTS_EFFECT_MULTIPLIER, 150)
-		M.adjustToxLoss(3*REAGENTS_EFFECT_MULTIPLIER,0)
 		M.adjustStaminaLoss(10*REAGENTS_EFFECT_MULTIPLIER,0)
 		M.blur_eyes(5)
 		. = TRUE

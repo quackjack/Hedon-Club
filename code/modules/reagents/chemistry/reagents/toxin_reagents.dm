@@ -18,7 +18,6 @@
 
 /datum/reagent/toxin/on_mob_life(mob/living/carbon/M)
 	if(toxpwr)
-		M.adjustToxLoss(toxpwr*REAGENTS_EFFECT_MULTIPLIER, 0)
 		. = TRUE
 	..()
 
@@ -134,16 +133,6 @@
 	pH = 10
 	value = REAGENT_VALUE_UNCOMMON
 
-/datum/reagent/toxin/slimejelly/on_mob_life(mob/living/carbon/M)
-	if(prob(10))
-		to_chat(M, "<span class='danger'>Your insides are burning!</span>")
-		M.adjustToxLoss(rand(20,60)*REAGENTS_EFFECT_MULTIPLIER, 0)
-		. = 1
-	else if(prob(40))
-		M.heal_bodypart_damage(5*REAGENTS_EFFECT_MULTIPLIER)
-		. = 1
-	..()
-
 /datum/reagent/toxin/minttoxin
 	name = "Mint Toxin"
 	description = "Useful for dealing with undesirable customers."
@@ -222,19 +211,6 @@
 	pH = 14.5
 	value = REAGENT_VALUE_EXCEPTIONAL
 
-/datum/reagent/toxin/ghoulpowder/on_mob_metabolize(mob/living/L)
-	..()
-	ADD_TRAIT(L, TRAIT_FAKEDEATH, type)
-
-/datum/reagent/toxin/ghoulpowder/on_mob_end_metabolize(mob/living/L)
-	REMOVE_TRAIT(L, TRAIT_FAKEDEATH, type)
-	..()
-
-/datum/reagent/toxin/ghoulpowder/on_mob_life(mob/living/carbon/M)
-	M.adjustOxyLoss(1*REAGENTS_EFFECT_MULTIPLIER, 0)
-	..()
-	. = 1
-
 /datum/reagent/toxin/mindbreaker
 	name = "Mindbreaker Toxin"
 	description = "A powerful hallucinogen. Not a thing to be messed with. For some mental patients. it counteracts their symptoms and anchors them to reality."
@@ -274,14 +250,6 @@
 		var/obj/structure/spacevine/SV = O
 		SV.on_chem_effect(src)
 
-/datum/reagent/toxin/plantbgone/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
-	if(method == VAPOR)
-		if(iscarbon(M))
-			var/mob/living/carbon/C = M
-			if(!C.wear_mask) // If not wearing a mask
-				var/damage = min(round(0.4*reac_volume, 0.1),10)
-				C.adjustToxLoss(damage)
-
 /datum/reagent/toxin/plantbgone/weedkiller
 	name = "Weed Killer"
 	description = "A harmful toxic mixture to kill weeds. Do not ingest!"
@@ -312,12 +280,6 @@
 	if(chems.has_reagent(type, 1))
 		mytray.adjustToxic(round(chems.get_reagent_amount(type) * 1))
 		mytray.adjustPests(-rand(1,2))
-
-/datum/reagent/toxin/pestkiller/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
-	..()
-	if(M.mob_biotypes & MOB_BUG)
-		var/damage = min(round(0.4*reac_volume, 0.1),10)
-		M.adjustToxLoss(damage)
 
 /datum/reagent/toxin/spore
 	name = "Spore Toxin"
@@ -356,20 +318,6 @@
 	metabolization_rate = 1.5 * REAGENTS_METABOLISM
 	pH = 11
 
-/datum/reagent/toxin/chloralhydrate/on_mob_life(mob/living/carbon/M)
-	switch(current_cycle)
-		if(1 to 10)
-			M.confused += 2
-			M.drowsyness += 2
-		if(10 to 50)
-			M.Sleeping(40, 0)
-			. = 1
-		if(51 to INFINITY)
-			M.Sleeping(40, 0)
-			M.adjustToxLoss((current_cycle - 50)*REAGENTS_EFFECT_MULTIPLIER, 0)
-			. = 1
-	..()
-
 /datum/reagent/toxin/fakebeer	//disguised as normal beer for use by emagged brobots
 	name = "Beer"
 	description = "A specially-engineered sedative disguised as beer. It induces instant sleep in its target."
@@ -388,7 +336,6 @@
 			M.Sleeping(40, 0)
 		if(51 to INFINITY)
 			M.Sleeping(40, 0)
-			M.adjustToxLoss((current_cycle - 50)*REAGENTS_EFFECT_MULTIPLIER, 0)
 	return ..()
 
 /datum/reagent/toxin/coffeepowder
@@ -425,10 +372,6 @@
 	taste_description = "silence"
 	pH = 12.2
 
-/datum/reagent/toxin/mutetoxin/on_mob_life(mob/living/carbon/M)
-	M.silent = max(M.silent, 3)
-	..()
-
 /datum/reagent/toxin/staminatoxin
 	name = "Tirizene"
 	description = "A nonlethal poison that causes extreme fatigue and weakness in its victim."
@@ -438,7 +381,6 @@
 	value = REAGENT_VALUE_UNCOMMON
 
 /datum/reagent/toxin/staminatoxin/on_mob_life(mob/living/carbon/M)
-	M.adjustStaminaLoss(REAGENTS_EFFECT_MULTIPLIER * data, 0)
 	data = max(data - 1, 5)
 	..()
 	. = 1
@@ -453,9 +395,6 @@
 	toxpwr = 0
 	value = REAGENT_VALUE_VERY_RARE
 
-/datum/reagent/toxin/polonium/on_mob_life(mob/living/carbon/M)
-	M.radiation += 4
-	..()
 
 /datum/reagent/toxin/histamine
 	name = "Histamine"
@@ -480,14 +419,6 @@
 			if(4)
 				if(prob(75))
 					to_chat(M, "You scratch at an itch.")
-					M.adjustBruteLoss(2*REAGENTS_EFFECT_MULTIPLIER, 0)
-					. = 1
-	..()
-
-/datum/reagent/toxin/histamine/overdose_process(mob/living/M)
-	M.adjustOxyLoss(2*REAGENTS_EFFECT_MULTIPLIER, 0)
-	M.adjustBruteLoss(2*REAGENTS_EFFECT_MULTIPLIER, 0)
-	M.adjustToxLoss(2*REAGENTS_EFFECT_MULTIPLIER, 0)
 	..()
 	. = 1
 
@@ -518,7 +449,6 @@
 
 /datum/reagent/toxin/venom/on_mob_life(mob/living/carbon/M)
 	toxpwr = 0.2*volume
-	M.adjustBruteLoss((0.3*volume)*REAGENTS_EFFECT_MULTIPLIER, 0)
 	. = 1
 	if(prob(15))
 		M.reagents.add_reagent(/datum/reagent/toxin/histamine, pick(5,10))
@@ -534,15 +464,6 @@
 	metabolization_rate = 0.5 * REAGENTS_METABOLISM
 	toxpwr = 0
 
-/datum/reagent/toxin/fentanyl/on_mob_life(mob/living/carbon/M)
-	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 3*REAGENTS_EFFECT_MULTIPLIER, 150)
-	if(M.toxloss <= 60)
-		M.adjustToxLoss(1*REAGENTS_EFFECT_MULTIPLIER, 0)
-	if(current_cycle >= 18)
-		M.Sleeping(40, 0)
-	..()
-	return TRUE
-
 /datum/reagent/toxin/cyanide
 	name = "Cyanide"
 	description = "An infamous poison known for its use in assassination. Causes small amounts of toxin damage with a small chance of oxygen damage or a stun."
@@ -552,14 +473,6 @@
 	toxpwr = 1.25
 	value = REAGENT_VALUE_UNCOMMON
 
-/datum/reagent/toxin/cyanide/on_mob_life(mob/living/carbon/M)
-	if(prob(5))
-		M.losebreath += 1
-	if(prob(8))
-		to_chat(M, "You feel horrendously weak!")
-		M.Stun(40, 0)
-		M.adjustToxLoss(2*REAGENTS_EFFECT_MULTIPLIER, 0)
-	return ..()
 
 /datum/reagent/toxin/bad_food
 	name = "Bad Food"
@@ -583,25 +496,6 @@
 	if((method == TOUCH || method == VAPOR) && M.reagents)
 		M.reagents.add_reagent(/datum/reagent/toxin/itching_powder, reac_volume)
 
-/datum/reagent/toxin/itching_powder/on_mob_life(mob/living/carbon/M)
-	if(prob(15))
-		to_chat(M, "You scratch at your head.")
-		M.adjustBruteLoss(0.2*REAGENTS_EFFECT_MULTIPLIER, 0)
-		. = 1
-	if(prob(15))
-		to_chat(M, "You scratch at your leg.")
-		M.adjustBruteLoss(0.2*REAGENTS_EFFECT_MULTIPLIER, 0)
-		. = 1
-	if(prob(15))
-		to_chat(M, "You scratch at your arm.")
-		M.adjustBruteLoss(0.2*REAGENTS_EFFECT_MULTIPLIER, 0)
-		. = 1
-	if(prob(3))
-		M.reagents.add_reagent(/datum/reagent/toxin/histamine,rand(1,3))
-		M.reagents.remove_reagent(type,1.2)
-		return
-	..()
-
 /datum/reagent/toxin/initropidril
 	name = "Initropidril"
 	description = "A powerful poison with insidious effects. It can cause stuns, lethal breathing failure, and cardiac arrest."
@@ -610,28 +504,6 @@
 	metabolization_rate = 0.5 * REAGENTS_METABOLISM
 	toxpwr = 2.5
 	value = REAGENT_VALUE_EXCEPTIONAL
-
-/datum/reagent/toxin/initropidril/on_mob_life(mob/living/carbon/C)
-	if(prob(25))
-		var/picked_option = rand(1,3)
-		switch(picked_option)
-			if(1)
-				C.DefaultCombatKnockdown(60, 0)
-				. = TRUE
-			if(2)
-				C.losebreath += 10
-				C.adjustOxyLoss(rand(5,25), 0)
-				. = TRUE
-			if(3)
-				if(!C.undergoing_cardiac_arrest() && C.can_heartattack())
-					C.set_heartattack(TRUE)
-					if(C.stat == CONSCIOUS)
-						C.visible_message("<span class='userdanger'>[C] clutches at [C.p_their()] chest as if [C.p_their()] heart stopped!</span>")
-				else
-					C.losebreath += 10
-					C.adjustOxyLoss(rand(5,25), 0)
-					. = TRUE
-	return ..() || .
 
 /datum/reagent/toxin/pancuronium
 	name = "Pancuronium"
@@ -689,12 +561,6 @@
 	metabolization_rate = 0.5 * REAGENTS_METABOLISM
 	value = REAGENT_VALUE_RARE
 
-/datum/reagent/toxin/amanitin/on_mob_end_metabolize(mob/living/M)
-	var/toxdamage = current_cycle*3*REAGENTS_EFFECT_MULTIPLIER
-	M.log_message("has taken [toxdamage] toxin damage from amanitin toxin", LOG_ATTACK)
-	M.adjustToxLoss(toxdamage)
-	..()
-
 /datum/reagent/toxin/lipolicide
 	name = "Lipolicide"
 	description = "A powerful toxin that will destroy fat cells, massively reducing body weight in a short time. Deadly to those without nutriment in their body."
@@ -703,13 +569,6 @@
 	color = "#F0FFF0"
 	metabolization_rate = 0.5 * REAGENTS_METABOLISM
 	toxpwr = 0
-
-/datum/reagent/toxin/lipolicide/on_mob_life(mob/living/carbon/M)
-	if(M.nutrition <= NUTRITION_LEVEL_STARVING)
-		M.adjustToxLoss(1*REAGENTS_EFFECT_MULTIPLIER, 0)
-	M.adjust_nutrition(-3) // making the chef more valuable, one meme trap at a time
-	M.overeatduration = 0
-	return ..()
 
 /datum/reagent/toxin/coniine
 	name = "Coniine"
@@ -758,13 +617,6 @@
 	metabolization_rate = 0.125 * REAGENTS_METABOLISM
 	toxpwr = 1
 	value = REAGENT_VALUE_VERY_RARE
-
-/datum/reagent/toxin/curare/on_mob_life(mob/living/carbon/M)
-	if(current_cycle >= 11)
-		M.DefaultCombatKnockdown(60, 0)
-	M.adjustOxyLoss(1*REAGENTS_EFFECT_MULTIPLIER, 0)
-	. = 1
-	..()
 
 /datum/reagent/toxin/heparin //Based on a real-life anticoagulant. I'm not a doctor, so this won't be realistic.
 	name = "Heparin"
@@ -887,18 +739,6 @@
 		mytray.adjustToxic(round(chems.get_reagent_amount(type) * 1.5))
 		mytray.adjustWeeds(-rand(1,2))
 
-/datum/reagent/toxin/acid/reaction_mob(mob/living/carbon/C, method=TOUCH, reac_volume)
-	if(!istype(C))
-		return
-	reac_volume = round(reac_volume,0.1)
-	if(method == INGEST)
-		C.adjustBruteLoss(min(6*toxpwr, reac_volume * toxpwr))
-		return
-	if(method == INJECT)
-		C.adjustBruteLoss(1.5 * min(6*toxpwr, reac_volume * toxpwr))
-		return
-	C.acid_act(acidpwr, reac_volume)
-
 /datum/reagent/toxin/acid/reaction_obj(obj/O, reac_volume)
 	if(ismob(O.loc)) //handled in human acid_act()
 		return
@@ -927,11 +767,6 @@
 		mytray.adjustToxic(round(chems.get_reagent_amount(type) * 3))
 		mytray.adjustWeeds(-rand(1,4))
 
-/datum/reagent/toxin/acid/fluacid/on_mob_life(mob/living/carbon/M)
-	M.adjustFireLoss(current_cycle/10, 0)
-	. = 1
-	..()
-
 /datum/reagent/toxin/delayed
 	name = "Toxin Microcapsules"
 	description = "Causes heavy toxin damage after a brief time of inactivity."
@@ -942,15 +777,6 @@
 	value = REAGENT_VALUE_VERY_RARE
 	var/actual_toxpwr = 5
 	var/delay = 30
-
-/datum/reagent/toxin/delayed/on_mob_life(mob/living/carbon/M)
-	if(current_cycle > delay)
-		holder.remove_reagent(type, actual_metaboliztion_rate * M.metabolism_efficiency)
-		M.adjustToxLoss(actual_toxpwr*REAGENTS_EFFECT_MULTIPLIER, 0)
-		if(prob(10))
-			M.DefaultCombatKnockdown(20, 0)
-		. = 1
-	..()
 
 /datum/reagent/toxin/mimesbane
 	name = "Mime's Bane"
@@ -975,58 +801,6 @@
 	overdose_threshold = 20
 	value = REAGENT_VALUE_VERY_RARE //because it's very funny.
 
-/datum/reagent/toxin/bonehurtingjuice/on_mob_add(mob/living/carbon/M)
-	M.say("oof ouch my bones", forced = /datum/reagent/toxin/bonehurtingjuice)
-
-/datum/reagent/toxin/bonehurtingjuice/on_mob_life(mob/living/carbon/M)
-	M.adjustStaminaLoss(7.5, 0)
-	if(HAS_TRAIT(M, TRAIT_CALCIUM_HEALER))
-		M.adjustBruteLoss(3.5, 0)
-	if(prob(12))
-		switch(rand(1, 3))
-			if(1)
-				var/list/possible_says = list("oof.", "ouch!", "my bones.", "oof ouch.", "oof ouch my bones.")
-				M.say(pick(possible_says), forced = /datum/reagent/toxin/bonehurtingjuice)
-			if(2)
-				var/list/possible_mes = list("oofs softly.", "looks like their bones hurt.", "grimaces, as though their bones hurt.")
-				M.say("*custom " + pick(possible_mes), forced = /datum/reagent/toxin/bonehurtingjuice)
-			if(3)
-				to_chat(M, "<span class='warning'>Your bones hurt!</span>")
-	return ..()
-
-/datum/reagent/toxin/bonehurtingjuice/overdose_process(mob/living/carbon/M)
-	if(prob(6) && iscarbon(M)) //big oof
-		var/selected_part
-		switch(rand(1, 4)) //God help you if the same limb gets picked twice quickly.
-			if(1)
-				selected_part = BODY_ZONE_L_ARM
-			if(2)
-				selected_part = BODY_ZONE_R_ARM
-			if(3)
-				selected_part = BODY_ZONE_L_LEG
-			if(4)
-				selected_part = BODY_ZONE_R_LEG
-		var/obj/item/bodypart/bp = M.get_bodypart(selected_part)
-		if(M.dna.species.type != /datum/species/skeleton || M.dna.species.type != /datum/species/plasmaman || M.dna.species.type != /datum/species/golem/bone) //We're so sorry skeletons, you're so misunderstood
-			if(bp)
-				bp.receive_damage(0, 0, 200)
-				playsound(M, get_sfx("desceration"), 50, TRUE, -1)
-				M.visible_message("<span class='warning'>[M]'s bones hurt too much!!</span>", "<span class='danger'>Your bones hurt too much!!</span>")
-				M.say("OOF!!", forced = /datum/reagent/toxin/bonehurtingjuice)
-			else //SUCH A LUST FOR REVENGE!!!
-				to_chat(M, "<span class='warning'>A phantom limb hurts!</span>")
-				M.say("Why are we still here, just to suffer?", forced = /datum/reagent/toxin/bonehurtingjuice)
-		else //you just want to socialize
-			if(bp)
-				playsound(M, get_sfx("desceration"), 50, TRUE, -1)
-				M.visible_message("<span class='warning'>[M] rattles loudly and flails around!!</span>", "<span class='danger'>Your bones hurt so much that your missing muscles spasm!!</span>")
-				M.say("OOF!!", forced=/datum/reagent/toxin/bonehurtingjuice)
-				bp.receive_damage(200, 0, 0) //But I don't think we should
-			else
-				to_chat(M, "<span class='warning'>Your missing arm aches from wherever you left it.</span>")
-				M.emote("sigh")
-	return ..()
-
 /datum/reagent/toxin/brainhurtingjuice //oof ouch
 	name = "Brain Hurting Juice"
 	color = "#AAAAAA77" //RGBA: 170, 170, 170, 77
@@ -1034,15 +808,6 @@
 	taste_description = "brain hurting"
 	metabolization_rate = 5
 	value = REAGENT_VALUE_EXCEPTIONAL
-
-/datum/reagent/toxin/brainhurtingjuice/on_mob_life(mob/living/carbon/M)
-	if(prob(50))
-		M.gain_trauma_type(BRAIN_TRAUMA_MILD)
-	else if(prob(50))
-		M.gain_trauma_type(BRAIN_TRAUMA_SEVERE)
-	else
-		M.gain_trauma_type(BRAIN_TRAUMA_SPECIAL)
-	..()
 
 /datum/reagent/toxin/bungotoxin
 	name = "Bungotoxin"
@@ -1055,7 +820,6 @@
 	value = REAGENT_VALUE_RARE
 
 /datum/reagent/toxin/bungotoxin/on_mob_life(mob/living/carbon/M)
-	M.adjustOrganLoss(ORGAN_SLOT_HEART, 3)
 	M.confused = M.dizziness //add a tertiary effect here if this is isn't an effective poison.
 	if(current_cycle >= 12 && prob(8))
 		var/tox_message = pick("You feel your heart spasm in your chest.", "You feel faint.","You feel you need to catch your breath.","You feel a prickle of pain in your chest.")
@@ -1073,8 +837,6 @@
 	taste_description = "sugary sweetness"
 
 /datum/reagent/toxin/leadacetate/on_mob_life(mob/living/carbon/M)
-	M.adjustOrganLoss(ORGAN_SLOT_EARS,1)
-	M.adjustOrganLoss(ORGAN_SLOT_BRAIN,1)
 	if(prob(1))
 		to_chat(M, "<span class='notice'>Ah, what was that? You thought you heard something...</span>")
 		M.confused += 5

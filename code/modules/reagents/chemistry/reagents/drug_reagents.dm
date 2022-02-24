@@ -82,34 +82,6 @@
 	..()
 	. = 1
 
-/datum/reagent/drug/crank/overdose_process(mob/living/M)
-	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 2*REAGENTS_EFFECT_MULTIPLIER)
-	M.adjustToxLoss(2*REAGENTS_EFFECT_MULTIPLIER, 0)
-	M.adjustBruteLoss(2*REAGENTS_EFFECT_MULTIPLIER, 0)
-	..()
-	. = 1
-
-/datum/reagent/drug/crank/addiction_act_stage1(mob/living/M)
-	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 5*REAGENTS_EFFECT_MULTIPLIER)
-	..()
-
-/datum/reagent/drug/crank/addiction_act_stage2(mob/living/M)
-	M.adjustToxLoss(5*REAGENTS_EFFECT_MULTIPLIER, 0)
-	..()
-	. = 1
-
-/datum/reagent/drug/crank/addiction_act_stage3(mob/living/M)
-	M.adjustBruteLoss(5*REAGENTS_EFFECT_MULTIPLIER, 0)
-	..()
-	. = 1
-
-/datum/reagent/drug/crank/addiction_act_stage4(mob/living/M)
-	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 3*REAGENTS_EFFECT_MULTIPLIER)
-	M.adjustToxLoss(5*REAGENTS_EFFECT_MULTIPLIER, 0)
-	M.adjustBruteLoss(5*REAGENTS_EFFECT_MULTIPLIER, 0)
-	..()
-	. = 1
-
 /datum/reagent/drug/krokodil
 	name = "Krokodil"
 	description = "Cools and calms you down. If overdosed it will deal significant Brain and Toxin damage. If addicted it will begin to deal fatal amounts of Brute damage as the subject's skin falls off."
@@ -127,18 +99,6 @@
 		to_chat(M, "<span class='notice'>[high_message]</span>")
 	..()
 
-/datum/reagent/drug/krokodil/overdose_process(mob/living/M)
-	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 0.25*REAGENTS_EFFECT_MULTIPLIER)
-	M.adjustToxLoss(0.25*REAGENTS_EFFECT_MULTIPLIER, 0)
-	..()
-	. = 1
-
-/datum/reagent/drug/krokodil/addiction_act_stage1(mob/living/M)
-	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 2*REAGENTS_EFFECT_MULTIPLIER)
-	M.adjustToxLoss(2*REAGENTS_EFFECT_MULTIPLIER, 0)
-	..()
-	. = 1
-
 /datum/reagent/drug/krokodil/addiction_act_stage2(mob/living/M)
 	if(prob(25))
 		to_chat(M, "<span class='danger'>Your skin feels loose...</span>")
@@ -147,20 +107,7 @@
 /datum/reagent/drug/krokodil/addiction_act_stage3(mob/living/M)
 	if(prob(25))
 		to_chat(M, "<span class='danger'>Your skin starts to peel away...</span>")
-	M.adjustBruteLoss(3*REAGENTS_EFFECT_MULTIPLIER, 0)
 	..()
-	. = 1
-
-/datum/reagent/drug/krokodil/addiction_act_stage4(mob/living/carbon/human/M)
-	CHECK_DNA_AND_SPECIES(M)
-	if(!istype(M.dna.species, /datum/species/krokodil_addict))
-		to_chat(M, "<span class='userdanger'>Your skin falls off easily!</span>")
-		M.adjustBruteLoss(50*REAGENTS_EFFECT_MULTIPLIER, 0) // holy shit your skin just FELL THE FUCK OFF
-		M.set_species(/datum/species/krokodil_addict)
-	else
-		M.adjustBruteLoss(5*REAGENTS_EFFECT_MULTIPLIER, 0)
-	..()
-	. = 1
 
 /datum/reagent/drug/methamphetamine
 	name = "Methamphetamine"
@@ -209,9 +156,6 @@
 		M.visible_message(span_danger("[M]'s hands flip out and flail everywhere!"))
 		M.drop_all_held_items()
 	..()
-	M.adjustToxLoss(1 * REAGENTS_EFFECT_MULTIPLIER * delta_time, 0)
-	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, (rand(5, 10) / 10) * REAGENTS_EFFECT_MULTIPLIER * delta_time)
-	. = TRUE
 
 /datum/reagent/drug/methamphetamine/addiction_act_stage1(mob/living/M)
 	M.Jitter(5)
@@ -242,7 +186,6 @@
 			step(M, pick(GLOB.cardinals))
 	M.Jitter(20)
 	M.Dizzy(20)
-	M.adjustToxLoss(5, 0)
 	if(prob(50))
 		M.emote(pick("twitch","drool","moan"))
 	..()
@@ -281,7 +224,6 @@
 	if(prob(5))
 		to_chat(M, "<span class='notice'>[high_message]</span>")
 	M.adjustStaminaLoss(-5, 0)
-	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 4)
 	M.hallucination += 5
 	if(CHECK_MOBILITY(M, MOBILITY_MOVE) && !ismovable(M.loc))
 		step(M, pick(GLOB.cardinals))
@@ -306,7 +248,6 @@
 		for(var/i = 0, i < 8, i++)
 			step(M, pick(GLOB.cardinals))
 	M.Jitter(5)
-	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 10)
 	if(prob(20))
 		M.emote(pick("twitch","drool","moan"))
 	..()
@@ -318,7 +259,6 @@
 			step(M, pick(GLOB.cardinals))
 	M.Jitter(10)
 	M.Dizzy(10)
-	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 10)
 	if(prob(30))
 		M.emote(pick("twitch","drool","moan"))
 	..()
@@ -330,7 +270,6 @@
 			step(M, pick(GLOB.cardinals))
 	M.Jitter(15)
 	M.Dizzy(15)
-	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 10)
 	if(prob(40))
 		M.emote(pick("twitch","drool","moan"))
 	..()
@@ -342,8 +281,6 @@
 			step(M, pick(GLOB.cardinals))
 	M.Jitter(50)
 	M.Dizzy(50)
-	M.adjustToxLoss(5, 0)
-	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 10)
 	if(prob(50))
 		M.emote(pick("twitch","drool","moan"))
 	..()
@@ -362,10 +299,6 @@
 	if(prob(5))
 		to_chat(M, "<span class='notice'>[high_message]</span>")
 	M.adjustStaminaLoss(-10, 0)
-	M.adjustToxLoss(0.5, 0)
-	if(prob(50))
-		M.losebreath++
-		M.adjustOxyLoss(1, 0)
 	..()
 	. = 1
 
@@ -393,7 +326,6 @@
 	M.jitteriness = 0
 	M.confused = 0
 	M.disgust = 0
-	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 0.2)
 	..()
 	. = 1
 
@@ -410,7 +342,6 @@
 			if(3)
 				M.emote("frown")
 				SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "happiness_drug", /datum/mood_event/happiness_drug_bad_od)
-	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 0.5)
 	..()
 	. = 1
 
@@ -486,8 +417,6 @@
 			H.dna.species.punchstunthreshold += 2
 
 /datum/reagent/drug/skooma/on_mob_life(mob/living/carbon/M)
-	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 1*REAGENTS_EFFECT_MULTIPLIER)
-	M.adjustToxLoss(1*REAGENTS_EFFECT_MULTIPLIER)
 	if(prob(10))
 		M.adjust_blurriness(2)
 	..()
@@ -517,8 +446,6 @@
 	M.Jitter(50)
 	M.Dizzy(50)
 	M.adjust_blurriness(10)
-	if(prob(50)) //This proc will be called about 200 times and the adjustbrainloss() below only has to be called 40 times to kill. This will make surviving skooma addiction pretty rare without mannitol usage.
-		M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 5)
 	if(prob(40))
 		M.emote(pick("twitch","drool","moan"))
 	..()
@@ -548,12 +475,6 @@
 
 /datum/reagent/syndicateadrenals/overdose_start(mob/living/M)
 	to_chat(M, "<span class='danger'>You feel an intense pain in your chest...</span>")
-
-/datum/reagent/syndicateadrenals/overdose_process(mob/living/M)
-	if(iscarbon(M))
-		var/mob/living/carbon/C = M
-		if(!C.undergoing_cardiac_arrest())
-			C.set_heartattack(TRUE)
 
 //aphrodisiac & anaphrodisiac
 
@@ -611,20 +532,6 @@
 			for(var/g in genits)
 				var/obj/item/organ/genital/G = g
 				to_chat(M, "<span class='userlove'>[G.arousal_verb]!</span>")
-	..()
-
-/datum/reagent/drug/aphrodisiacplus/addiction_act_stage2(mob/living/M)
-	if(prob(30))
-		M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 2)
-	..()
-/datum/reagent/drug/aphrodisiacplus/addiction_act_stage3(mob/living/M)
-	if(prob(30))
-		M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 3)
-
-		..()
-/datum/reagent/drug/aphrodisiacplus/addiction_act_stage4(mob/living/M)
-	if(prob(30))
-		M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 4)
 	..()
 
 /datum/reagent/drug/aphrodisiacplus/overdose_process(mob/living/M)

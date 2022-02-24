@@ -1,4 +1,3 @@
-
 /datum/chemical_reaction/formaldehyde
 	name = "formaldehyde"
 	id = /datum/reagent/toxin/formaldehyde

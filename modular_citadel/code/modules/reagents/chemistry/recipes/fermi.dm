@@ -1,3 +1,4 @@
+
 /datum/chemical_reaction/fermi
 	mix_sound = 'sound/effects/bubbles.ogg'
 
@@ -36,7 +37,7 @@
 		pH = 7
 	var/ImpureTot = 0
 	var/turf/T = get_turf(my_atom)
-
+	/*	NO EXPLOSIONS INSIDE THE BUILDING
 	if(temp>500)//if hot, start a fire
 		switch(temp)
 			if (500 to 750)
@@ -98,8 +99,9 @@
 		empulse(T, ImpureTot, 1)
 
 	my_atom.reagents.clear_reagents() //just in case
+	*/
 	return
-
+/*
 /datum/chemical_reaction/fermi/eigenstate
 	name = "Eigenstasium"
 	id = /datum/reagent/fermi/eigenstate
@@ -252,7 +254,7 @@
 		holder.remove_reagent(type, cached_volume)
 		holder.add_reagent(/datum/reagent/fermi/PEsmaller, cached_volume)
 
-/*
+
 /datum/chemical_reaction/fermi/astral
 	name = "Astrogen"
 	id = /datum/reagent/fermi/astral
@@ -274,7 +276,7 @@
 	FermiChem				= TRUE
 	FermiExplode 			= TRUE
 	PurityMin 				= 0.25
-*/
+
 
 /datum/chemical_reaction/fermi/enthrall //check this
 	name = "MKUltra"
@@ -617,3 +619,4 @@
 	RateUpLim 		= 4
 	PurityMin 		= 0.5 //Good luck!
 	FermiChem 		= TRUE
+*/

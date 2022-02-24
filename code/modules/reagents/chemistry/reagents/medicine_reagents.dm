@@ -114,9 +114,6 @@
 	if(holder.has_reagent(/datum/reagent/toxin/mindbreaker))
 		holder.remove_reagent(/datum/reagent/toxin/mindbreaker, 5)
 	M.hallucination = max(0, M.hallucination - 10)
-	if(prob(30))
-		M.adjustToxLoss(1, 0)
-		. = 1
 	..()
 
 /datum/reagent/medicine/synaphydramine
@@ -134,9 +131,6 @@
 	if(holder.has_reagent(/datum/reagent/toxin/histamine))
 		holder.remove_reagent(/datum/reagent/toxin/histamine, 5)
 	M.hallucination = max(0, M.hallucination - 10)
-	if(prob(30))
-		M.adjustToxLoss(1, 0)
-		. = 1
 	..()
 
 /datum/reagent/medicine/inacusiate
@@ -253,7 +247,6 @@
 	. = 1
 
 /datum/reagent/medicine/rezadone/overdose_process(mob/living/M)
-	M.adjustToxLoss(1, 0)
 	M.Dizzy(5)
 	M.Jitter(5)
 	..()
@@ -296,7 +289,6 @@
 /datum/reagent/medicine/silver_sulfadiazine/reaction_mob(mob/living/M, method=TOUCH, reac_volume, show_message = 1)
 	if(iscarbon(M) && M.stat != DEAD)
 		if(method in list(INGEST, VAPOR, INJECT))
-			M.adjustToxLoss(0.5*reac_volume)
 			if(show_message)
 				to_chat(M, "<span class='warning'>You don't feel so good...</span>")
 		else if(M.getFireLoss())
@@ -361,7 +353,6 @@
 /datum/reagent/medicine/styptic_powder/reaction_mob(mob/living/M, method=TOUCH, reac_volume, show_message = 1)
 	if(iscarbon(M) && M.stat != DEAD)
 		if(method in list(INGEST, VAPOR, INJECT))
-			M.adjustToxLoss(0.5*reac_volume)
 			if(show_message)
 				to_chat(M, "<span class='warning'>You don't feel so good...</span>")
 		else if(M.getBruteLoss())
@@ -570,14 +561,6 @@
 	..()
 	. = 1
 
-/datum/reagent/medicine/omnizine/overdose_process(mob/living/M)
-	M.adjustToxLoss(1.5*REAGENTS_EFFECT_MULTIPLIER, 0)
-	M.adjustOxyLoss(1.5*REAGENTS_EFFECT_MULTIPLIER, 0)
-	M.adjustBruteLoss(1.5*REAGENTS_EFFECT_MULTIPLIER, 0)
-	M.adjustFireLoss(1.5*REAGENTS_EFFECT_MULTIPLIER, 0)
-	..()
-	. = 1
-
 /datum/reagent/medicine/omnizine/protozine
 	name = "Protozine"
 	description = "A less environmentally friendly and somewhat weaker variant of omnizine."
@@ -599,8 +582,6 @@
 		var/datum/reagent/R = A
 		if(R != src)
 			M.reagents.remove_reagent(R.type,2.5)
-	if(M.health > 20)
-		M.adjustToxLoss(2.5*REAGENTS_EFFECT_MULTIPLIER, 0)
 		. = 1
 	..()
 
@@ -754,47 +735,14 @@
 
 /datum/reagent/medicine/ephedrine/overdose_process(mob/living/M, delta_time, times_fired)
 	if(DT_PROB(1, delta_time) && iscarbon(M))
-		var/datum/disease/D = new /datum/disease/heart_failure
-		M.ForceContractDisease(D)
 		to_chat(M, span_userdanger("You're pretty sure you just felt your heart stop for a second there.."))
 		M.playsound_local(M, 'sound/effects/singlebeat.ogg', 100, 0)
 
 	if(DT_PROB(3.5, delta_time))
 		to_chat(M, span_notice("[pick("Your head pounds.", "You feel a tight pain in your chest.", "You find it hard to stay still.", "You feel your heart practically beating out of your chest.")]"))
 
-	if(DT_PROB(18, delta_time))
-		M.adjustToxLoss(1, 0)
-		M.losebreath++
 		. = TRUE
 	return TRUE
-
-/datum/reagent/medicine/ephedrine/addiction_act_stage1(mob/living/M)
-	if(prob(33))
-		M.adjustToxLoss(2*REAGENTS_EFFECT_MULTIPLIER, 0)
-		M.losebreath += 2
-		. = 1
-	..()
-
-/datum/reagent/medicine/ephedrine/addiction_act_stage2(mob/living/M)
-	if(prob(33))
-		M.adjustToxLoss(3*REAGENTS_EFFECT_MULTIPLIER, 0)
-		M.losebreath += 3
-		. = 1
-	..()
-
-/datum/reagent/medicine/ephedrine/addiction_act_stage3(mob/living/M)
-	if(prob(33))
-		M.adjustToxLoss(4*REAGENTS_EFFECT_MULTIPLIER, 0)
-		M.losebreath += 4
-		. = 1
-	..()
-
-/datum/reagent/medicine/ephedrine/addiction_act_stage4(mob/living/M)
-	if(prob(33))
-		M.adjustToxLoss(5*REAGENTS_EFFECT_MULTIPLIER, 0)
-		M.losebreath += 5
-		. = 1
-	..()
 
 /datum/reagent/medicine/diphenhydramine
 	name = "Diphenhydramine"
@@ -859,7 +807,6 @@
 /datum/reagent/medicine/morphine/addiction_act_stage2(mob/living/M)
 	if(prob(33))
 		M.drop_all_held_items()
-		M.adjustToxLoss(1*REAGENTS_EFFECT_MULTIPLIER, 0)
 		. = 1
 		M.Dizzy(3)
 		M.Jitter(3)
@@ -868,7 +815,6 @@
 /datum/reagent/medicine/morphine/addiction_act_stage3(mob/living/M)
 	if(prob(33))
 		M.drop_all_held_items()
-		M.adjustToxLoss(2*REAGENTS_EFFECT_MULTIPLIER, 0)
 		. = 1
 		M.Dizzy(4)
 		M.Jitter(4)
@@ -877,7 +823,6 @@
 /datum/reagent/medicine/morphine/addiction_act_stage4(mob/living/M)
 	if(prob(33))
 		M.drop_all_held_items()
-		M.adjustToxLoss(3*REAGENTS_EFFECT_MULTIPLIER, 0)
 		. = 1
 		M.Dizzy(5)
 		M.Jitter(5)
@@ -937,13 +882,6 @@
 		M.Jitter(5)
 	..()
 
-/datum/reagent/medicine/atropine/overdose_process(mob/living/M)
-	M.adjustToxLoss(0.5*REAGENTS_EFFECT_MULTIPLIER, 0)
-	. = 1
-	M.Dizzy(1)
-	M.Jitter(1)
-	..()
-
 /datum/reagent/medicine/epinephrine
 	name = "Epinephrine"
 	description = "Minor boost to stun resistance. Slowly heals damage if a patient is in critical condition, as well as regulating oxygen loss. Overdose causes weakness and toxin damage."
@@ -969,14 +907,6 @@
 	if(prob(20))
 		M.AdjustAllImmobility(-20, 0)
 		M.AdjustUnconscious(-20, 0)
-	..()
-
-/datum/reagent/medicine/epinephrine/overdose_process(mob/living/M)
-	if(prob(33))
-		M.adjustStaminaLoss(2.5*REAGENTS_EFFECT_MULTIPLIER, 0)
-		M.adjustToxLoss(1*REAGENTS_EFFECT_MULTIPLIER, 0)
-		M.losebreath++
-		. = 1
 	..()
 
 /datum/reagent/medicine/strange_reagent
@@ -1249,11 +1179,6 @@
 	..()
 	. = 1
 
-/datum/reagent/medicine/antitoxin/overdose_process(mob/living/M)
-	M.adjustToxLoss(4*REAGENTS_EFFECT_MULTIPLIER, FALSE) // End result is 2 toxin loss taken, because it heals 2 and then removes 4.
-	..()
-	. = 1
-
 // Antitoxin binds plants pretty well. So the tox goes significantly down
 /datum/reagent/medicine/antitoxin/on_hydroponics_apply(obj/item/seeds/myseed, datum/reagents/chems, obj/machinery/hydroponics/mytray, mob/user)
 	. = ..()
@@ -1287,14 +1212,6 @@
 		M.adjustToxLoss(-1*REAGENTS_EFFECT_MULTIPLIER, FALSE)
 		. = 1
 	..()
-
-/datum/reagent/medicine/tricordrazine/overdose_process(mob/living/M)
-	M.adjustToxLoss(2*REAGENTS_EFFECT_MULTIPLIER, FALSE)
-	M.adjustOxyLoss(2*REAGENTS_EFFECT_MULTIPLIER, FALSE)
-	M.adjustBruteLoss(2*REAGENTS_EFFECT_MULTIPLIER, FALSE)
-	M.adjustFireLoss(2*REAGENTS_EFFECT_MULTIPLIER, FALSE)
-	..()
-	. = 1
 
 /datum/reagent/medicine/regen_jelly
 	name = "Regenerative Jelly"
@@ -1420,7 +1337,6 @@
 
 /datum/reagent/medicine/earthsblood/overdose_process(mob/living/M)
 	M.hallucination = min(max(0, M.hallucination + 5), 60)
-	M.adjustToxLoss(8 * REAGENTS_EFFECT_MULTIPLIER, FALSE, TRUE) //Hurts TOXINLOVERS
 	..()
 	. = 1
 
@@ -1458,13 +1374,6 @@
 
 /datum/reagent/medicine/lavaland_extract/on_mob_life(mob/living/carbon/M)
 	M.heal_bodypart_damage(5,5)
-	..()
-	return TRUE
-
-/datum/reagent/medicine/lavaland_extract/overdose_process(mob/living/M)
-	M.adjustBruteLoss(3*REAGENTS_EFFECT_MULTIPLIER, 0)
-	M.adjustFireLoss(3*REAGENTS_EFFECT_MULTIPLIER, 0)
-	M.adjustToxLoss(3*REAGENTS_EFFECT_MULTIPLIER, 0)
 	..()
 	return TRUE
 
@@ -1651,7 +1560,6 @@
 
 /datum/reagent/medicine/psicodine/overdose_process(mob/living/M)
 	M.hallucination = min(max(0, M.hallucination + 5), 60)
-	M.adjustToxLoss(1, 0)
 	..()
 	. = 1
 
@@ -1785,14 +1693,4 @@
 	. = ..()
 	if(HAS_TRAIT(M, TRAIT_ROBOTIC_ORGANISM))
 		M.adjustToxLoss(-0.4*REAGENTS_EFFECT_MULTIPLIER, toxins_type = TOX_SYSCORRUPT)
-	else
-		M.adjustToxLoss(0.5*REAGENTS_EFFECT_MULTIPLIER)
-	. = 1
-
-/datum/reagent/medicine/system_cleaner/overdose_process(mob/living/carbon/M)
-	. = ..()
-	if(HAS_TRAIT(M, TRAIT_ROBOTIC_ORGANISM))
-		M.adjustToxLoss(0.8*REAGENTS_EFFECT_MULTIPLIER, toxins_type = TOX_SYSCORRUPT) //inverts its positive effect on overdose, for organics it's just more toxic
-	else
-		M.adjustToxLoss(0.5*REAGENTS_EFFECT_MULTIPLIER)
 	. = 1

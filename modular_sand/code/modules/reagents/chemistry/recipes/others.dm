@@ -21,6 +21,7 @@
 	for(var/i in 1 to multiplier)
 		new /obj/item/stack/ore/iron(location)
 */
+/*	Imagine somebody gets their hands on bluespace
 /datum/chemical_reaction/anomaly
 	name = "flux anomaly"
 	id = "flux_anomaly"
@@ -56,3 +57,4 @@
 				new /obj/effect/anomaly/bluespace(location)
 			if("pyro_anomaly")
 				new /obj/effect/anomaly/pyro(location)
+*/

@@ -97,11 +97,6 @@
 	glass_name = "glass of berry juice"
 	glass_desc = "Berry juice. Or maybe it's poison. Who cares?"
 
-/datum/reagent/consumable/poisonberryjuice/on_mob_life(mob/living/carbon/M)
-	M.adjustToxLoss(1, 0)
-	. = 1
-	..()
-
 /datum/reagent/consumable/watermelonjuice
 	name = "Watermelon Juice"
 	description = "Delicious juice made from watermelon."
@@ -504,6 +499,7 @@
 	glass_desc = "Don't cry, Don't raise your eye, It's only nuclear wasteland."
 	value = REAGENT_VALUE_COMMON
 
+/*	This is not harmful, but it is *personal*.
 /datum/reagent/consumable/nuka_cola/on_mob_metabolize(mob/living/carbon/M)
 	M.add_movespeed_modifier(/datum/movespeed_modifier/reagent/nuka_cola)
 	return ..()
@@ -511,6 +507,7 @@
 /datum/reagent/consumable/nuka_cola/on_mob_end_metabolize(mob/living/carbon/M)
 	M.remove_movespeed_modifier(/datum/movespeed_modifier/reagent/nuka_cola)
 	return ..()
+*/
 
 /datum/reagent/consumable/nuka_cola/on_mob_life(mob/living/carbon/M)
 	M.Jitter(20)

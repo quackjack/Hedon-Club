@@ -15,12 +15,6 @@
 	M.AdjustImmobilized(-10 * REAGENTS_EFFECT_MULTIPLIER * delta_time)
 	M.adjustOrganLoss(ORGAN_SLOT_LIVER, 1.5 * REAGENTS_EFFECT_MULTIPLIER * delta_time)
 
-/datum/reagent/drug/maint/tar/overdose_process(mob/living/M, delta_time, times_fired)
-	. = ..()
-
-	M.adjustToxLoss(5 * REAGENTS_EFFECT_MULTIPLIER * delta_time)
-	M.adjustOrganLoss(ORGAN_SLOT_LIVER, 3 * REAGENTS_EFFECT_MULTIPLIER * delta_time)
-
 /datum/reagent/drug/copium
 	name = "Copium"
 	description = "Cope and sssethe"

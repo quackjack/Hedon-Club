@@ -203,55 +203,6 @@ All effects don't start immediately, but rather get worse over time; the rate is
 	glass_name = "glass of Thirteen Loko"
 	glass_desc = "This is a glass of Thirteen Loko, it appears to be of the highest quality. The drink, not the glass."
 
-/datum/reagent/consumable/ethanol/thirteenloko/on_mob_life(mob/living/carbon/M)
-	M.drowsyness = max(0,M.drowsyness-7)
-	M.AdjustSleeping(-40)
-	M.adjust_bodytemperature(-5 * TEMPERATURE_DAMAGE_COEFFICIENT, BODYTEMP_NORMAL)
-	if(!HAS_TRAIT(M, TRAIT_ALCOHOL_TOLERANCE))
-		M.Jitter(5)
-	return ..()
-
-/datum/reagent/consumable/ethanol/thirteenloko/overdose_start(mob/living/M)
-	to_chat(M, "<span class='userdanger'>Your entire body violently jitters as you start to feel queasy. You really shouldn't have drank all of that [name]!</span>")
-	M.Jitter(20)
-	M.Stun(15)
-
-/datum/reagent/consumable/ethanol/thirteenloko/overdose_process(mob/living/M)
-	if(prob(7) && iscarbon(M))
-		var/obj/item/I = M.get_active_held_item()
-		if(I)
-			M.dropItemToGround(I)
-			to_chat(M, "<span class ='notice'>Your hands jitter and you drop what you were holding!</span>")
-			M.Jitter(10)
-
-	if(prob(7))
-		to_chat(M, "<span class='notice'>[pick("You have a really bad headache.", "Your eyes hurt.", "You find it hard to stay still.", "You feel your heart practically beating out of your chest.")]</span>")
-
-	if(prob(5) && iscarbon(M))
-		var/obj/item/organ/eyes/eyes = M.getorganslot(ORGAN_SLOT_EYES)
-		if(HAS_TRAIT(M, TRAIT_BLIND))
-			if(eyes)
-				eyes.Remove()
-				eyes.forceMove(get_turf(M))
-				to_chat(M, "<span class='userdanger'>You double over in pain as you feel your eyeballs liquify in your head!</span>")
-				M.emote("scream")
-				M.adjustBruteLoss(15)
-		else
-			to_chat(M, "<span class='userdanger'>You scream in terror as you go blind!</span>")
-			eyes?.applyOrganDamage(eyes.maxHealth)
-			M.emote("scream")
-
-	if(prob(3) && iscarbon(M))
-		M.visible_message("<span class='danger'>[M] starts having a seizure!</span>", "<span class='userdanger'>You have a seizure!</span>")
-		M.Unconscious(100)
-		M.Jitter(350)
-
-	if(prob(1) && iscarbon(M))
-		var/datum/disease/D = new /datum/disease/heart_failure
-		M.ForceContractDisease(D)
-		to_chat(M, "<span class='userdanger'>You're pretty sure you just felt your heart stop for a second there..</span>")
-		M.playsound_local(M, 'sound/effects/singlebeat.ogg', 100, 0)
-
 /datum/reagent/consumable/ethanol/vodka
 	name = "Vodka"
 	description = "Number one drink AND fueling choice for Russians worldwide."
@@ -1320,23 +1271,6 @@ All effects don't start immediately, but rather get worse over time; the rate is
 	glass_desc = "Nanotrasen cannot take legal responsibility for your actions after imbibing."
 	value = REAGENT_VALUE_RARE
 
-/datum/reagent/consumable/ethanol/atomicbomb/on_mob_life(mob/living/carbon/M)
-	M.set_drugginess(50)
-	if(!HAS_TRAIT(M, TRAIT_ALCOHOL_TOLERANCE))
-		M.confused = max(M.confused+2,0)
-		M.Dizzy(10)
-	M.slurring = max(M.slurring,50)
-	M.slurring += 3
-	switch(current_cycle)
-		if(51 to 200)
-			M.Sleeping(100, FALSE)
-			. = 1
-		if(201 to INFINITY)
-			M.AdjustSleeping(40, FALSE)
-			M.adjustToxLoss(2, 0)
-			. = 1
-	..()
-
 /datum/reagent/consumable/ethanol/gargle_blaster
 	name = "Pan-Galactic Gargle Blaster"
 	description = "Whoah, this stuff looks volatile!"
@@ -1347,22 +1281,6 @@ All effects don't start immediately, but rather get worse over time; the rate is
 	glass_icon_state = "gargleblasterglass"
 	glass_name = "Pan-Galactic Gargle Blaster"
 	glass_desc = "Like having your brain smashed out by a slice of lemon wrapped around a large gold brick."
-
-/datum/reagent/consumable/ethanol/gargle_blaster/on_mob_life(mob/living/carbon/M)
-	M.dizziness +=1.5
-	switch(current_cycle)
-		if(15 to 45)
-			M.slurring = max(M.slurring,50)
-			M.slurring += 3
-		if(45 to 55)
-			if(prob(50))
-				M.confused = max(M.confused+3,0)
-		if(55 to 200)
-			M.set_drugginess(55)
-		if(200 to INFINITY)
-			M.adjustToxLoss(2, 0)
-			. = 1
-	..()
 
 /datum/reagent/consumable/ethanol/neurotoxin
 	name = "Neurotoxin"
@@ -1397,13 +1315,6 @@ All effects don't start immediately, but rather get worse over time; the rate is
 			var/t = pickt()
 			ADD_TRAIT(M, t, type)
 			M.adjustStaminaLoss(10)
-		if(current_cycle > 30)
-			M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 2*REAGENTS_EFFECT_MULTIPLIER)
-			if(current_cycle > 50 && prob(15))
-				if(!M.undergoing_cardiac_arrest() && M.can_heartattack())
-					M.set_heartattack(TRUE)
-					if(M.stat == CONSCIOUS)
-						M.visible_message("<span class='userdanger'>[M] clutches at [M.p_their()] chest as if [M.p_their()] heart stopped!</span>")
 	. = TRUE
 	..()
 
@@ -1473,9 +1384,6 @@ All effects don't start immediately, but rather get worse over time; the rate is
 			M.set_drugginess(75)
 			if(prob(40))
 				M.emote(pick("twitch","giggle"))
-			if(prob(30))
-				M.adjustToxLoss(2, 0)
-				. = 1
 	..()
 
 /datum/reagent/consumable/ethanol/eggnog
@@ -1763,9 +1671,6 @@ All effects don't start immediately, but rather get worse over time; the rate is
 	glass_desc = "It'll either knock the drunkenness out of you or knock you out cold. Both, probably."
 	value = REAGENT_VALUE_COMMON
 
-/datum/reagent/consumable/ethanol/crevice_spike/on_mob_metabolize(mob/living/L) //damage only applies when drink first enters system and won't again until drink metabolizes out
-	L.adjustBruteLoss(3 * min(5,volume)) //minimum 3 brute damage on ingestion to limit non-drink means of injury - a full 5 unit gulp of the drink trucks you for the full 15
-
 /datum/reagent/consumable/ethanol/sake
 	name = "Sake"
 	description = "A sweet rice wine of questionable legality and extreme potency."
@@ -1946,8 +1851,6 @@ All effects don't start immediately, but rather get worse over time; the rate is
 	glass_desc = "A glass of pure Fernet. Only an absolute madman would drink this alone."
 
 /datum/reagent/consumable/ethanol/fernet/on_mob_life(mob/living/carbon/M)
-	if(M.nutrition <= NUTRITION_LEVEL_STARVING)
-		M.adjustToxLoss(1*REAGENTS_EFFECT_MULTIPLIER, 0)
 	M.adjust_nutrition(-5)
 	M.overeatduration = 0
 	return ..()
@@ -1964,8 +1867,6 @@ All effects don't start immediately, but rather get worse over time; the rate is
 	glass_desc = "A sawed-off cola bottle filled with Fernet Cola. Nothing better after eating like a lardass."
 
 /datum/reagent/consumable/ethanol/fernet_cola/on_mob_life(mob/living/carbon/M)
-	if(M.nutrition <= NUTRITION_LEVEL_STARVING)
-		M.adjustToxLoss(0.5*REAGENTS_EFFECT_MULTIPLIER, 0)
 	M.adjust_nutrition(-3)
 	M.overeatduration = 0
 	return ..()
@@ -2209,17 +2110,6 @@ All effects don't start immediately, but rather get worse over time; the rate is
 	glass_desc = "The glass seems to be sliding between realities. Doubles as a Berenstain remover."
 	value = REAGENT_VALUE_UNCOMMON
 	var/stored_teleports = 0
-
-/datum/reagent/consumable/ethanol/blazaam/on_mob_life(mob/living/carbon/M)
-	if(M.drunkenness > 40)
-		if(stored_teleports)
-			do_teleport(M, get_turf(M), rand(1,3), channel = TELEPORT_CHANNEL_WORMHOLE)
-			stored_teleports--
-		if(prob(10))
-			stored_teleports += rand(2,6)
-			if(prob(70))
-				M.vomit(vomit_type = VOMIT_PURPLE)
-	return ..()
 
 /datum/reagent/consumable/ethanol/planet_cracker
 	name = "Planet Cracker"

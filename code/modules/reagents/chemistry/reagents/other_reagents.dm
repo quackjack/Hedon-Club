@@ -55,13 +55,6 @@
 	if(reac_volume >= 10 && istype(L) && method != INJECT)
 		L.add_blood_DNA(list(data["blood_DNA"] = data["blood_type"]))
 
-/datum/reagent/blood/on_mob_life(mob/living/carbon/C)	//Because lethals are preferred over stamina. damnifino.
-	var/blood_id = C.get_blood_id()
-	if((blood_id in GLOB.blood_reagent_types) && !HAS_TRAIT(C, TRAIT_NOMARROW))
-		if(!data || !(data["blood_type"] in get_safe_blood(C.dna.blood_type)))	//we only care about bloodtype here because this is where the poisoning should be
-			C.adjustToxLoss(rand(2,8)*REAGENTS_EFFECT_MULTIPLIER, TRUE, TRUE)	//forced to ensure people don't use it to gain beneficial toxin as slime person
-	..()
-
 /datum/reagent/blood/reaction_obj(obj/O, volume)
 	if(volume >= 3 && istype(O))
 		O.add_blood_DNA(data)
@@ -176,7 +169,6 @@
 	if(prob(10))
 		if(M.dna?.species?.exotic_bloodtype != "GEL")
 			to_chat(M, "<span class='danger'>Your insides are burning!</span>")
-		M.adjustToxLoss(rand(20,60)*REAGENTS_EFFECT_MULTIPLIER, 0)
 		. = 1
 	else if(prob(40) && isjellyperson(M))
 		M.heal_bodypart_damage(2*REAGENTS_EFFECT_MULTIPLIER)
@@ -417,7 +409,7 @@
 				if(prob(25)) //Prob of a prob.. Shouldn't happen too often but hey, that's what you get.
 					M.IgniteMob()
 				else
-					M.adjustToxLoss(1, 0)
+					M.adjustToxLoss(1, 0)	// Keeping this in. You're not forced to pick the trait.
 					M.adjustFireLoss(1, 0)
 	if(data["misc"] >= 60)	// 30 units, 135 seconds
 		if(iscultist(M, FALSE, TRUE) || is_servant_of_ratvar(M, FALSE, TRUE))
@@ -473,12 +465,6 @@
 		M.adjustFireLoss(-2, FALSE)
 		if(ishuman(M) && M.blood_volume < (BLOOD_VOLUME_NORMAL*M.blood_ratio))
 			M.adjust_integration_blood(3)
-	else  // Will deal about 90 damage when 50 units are thrown
-		M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 3, 150)
-		M.adjustToxLoss(2, FALSE)
-		M.adjustFireLoss(2, FALSE)
-		M.adjustOxyLoss(2, FALSE)
-		M.adjustBruteLoss(2, FALSE)
 	holder.remove_reagent(type, 1)
 	return TRUE
 
@@ -502,11 +488,6 @@
 		M.ExtinguishMob()
 		holder.remove_reagent(type, 1)
 		return
-	M.fire_stacks = min(5,M.fire_stacks + 3)
-	M.IgniteMob()			//Only problem with igniting people is currently the commonly availible fire suits make you immune to being on fire
-	M.adjustToxLoss(1, FALSE)
-	M.adjustFireLoss(1, FALSE)		//Hence the other damages... ain't I a bastard?
-	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 5, 150)
 	holder.remove_reagent(type, 1)
 	pH = 0.1
 
@@ -533,9 +514,6 @@
 		M.AdjustKnockdown(10, FALSE)
 		M.adjustStaminaLoss(15, FALSE)
 	else
-		M.adjustToxLoss(3, FALSE)
-		M.adjustOxyLoss(2, FALSE)
-		M.adjustStaminaLoss(10, FALSE)
 		holder.remove_reagent(type, 1)
 	return TRUE
 
@@ -632,38 +610,6 @@
 	if(ReadHSV(newcolor)[3] >= ReadHSV(limit)[3])
 		return newcolor
 	return color
-
-/datum/reagent/spraytan/overdose_start(mob/living/M)
-	. = ..()
-	if(ishuman(M))
-		var/mob/living/carbon/human/H = M
-		H.hair_style = "Spiky"
-		H.facial_hair_style = "Shaved"
-		H.facial_hair_color = "000"
-		H.hair_color = "000"
-		if(!(HAIR in H.dna.species.species_traits)) //No hair? No problem!
-			H.dna.species.species_traits += HAIR
-		if(H.dna.species.use_skintones)
-			if(H.dna.skin_tone_override)
-				H.skin_tone = H.dna.skin_tone_override = "#FF8800"
-			else
-				H.skin_tone = "orange"
-		else if(MUTCOLORS in H.dna.species.species_traits) //Aliens with custom colors simply get turned orange
-			H.dna.features["mcolor"] = "f80"
-		H.update_body()
-
-/datum/reagent/spraytan/overdose_process(mob/living/M)
-	metabolization_rate = 1 * REAGENTS_METABOLISM
-	if(ishuman(M))
-		var/mob/living/carbon/human/H = M
-		if(prob(7))
-			if(H.w_uniform)
-				H.visible_message(pick("<b>[H]</b>'s collar pops up without warning.</span>", "<b>[H]</b> flexes [H.p_their()] arms."))
-			else
-				H.visible_message("<b>[H]</b> flexes [H.p_their()] arms.")
-	if(prob(10))
-		M.say(pick("Shit was SO cash.", "You are everything bad in the world.", "What sports do you play, other than 'jack off to naked drawn Japanese people?'", "Don’t be a stranger. Just hit me with your best shot.", "My name is John and I hate every single one of you."), forced = "spraytan")
-	return ..()
 
 /datum/reagent/mutationtoxin
 	name = "Stable Mutation Toxin"
@@ -907,8 +853,6 @@
 	taste_description = "decay"
 	value = REAGENT_VALUE_GLORIOUS
 
-/datum/reagent/gluttonytoxin/reaction_mob(mob/living/L, method=TOUCH, reac_volume)
-	L.ForceContractDisease(new /datum/disease/transformation/morph(), FALSE, TRUE)
 
 /datum/reagent/serotrotium
 	name = "Serotrotium"
@@ -988,7 +932,6 @@
 		step(M, pick(GLOB.cardinals))
 	if(prob(5))
 		M.emote(pick("twitch","drool","moan"))
-	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 1)
 	..()
 
 /datum/reagent/sulfur
@@ -1032,11 +975,6 @@
 		mytray.adjustWater(-round(chems.get_reagent_amount(src.type) * 0.5))
 		mytray.adjustWeeds(-rand(1,3))
 
-/datum/reagent/chlorine/on_mob_life(mob/living/carbon/M)
-	M.take_bodypart_damage(1*REAGENTS_EFFECT_MULTIPLIER, 0, 0, 0)
-	. = 1
-	..()
-
 /datum/reagent/fluorine
 	name = "Fluorine"
 	description = "A comically-reactive chemical element. The universe does not want this stuff to exist in this form in the slightest."
@@ -1053,11 +991,6 @@
 		mytray.adjustToxic(round(chems.get_reagent_amount(src.type) * 2.5))
 		mytray.adjustWater(-round(chems.get_reagent_amount(src.type) * 0.5))
 		mytray.adjustWeeds(-rand(1,4))
-
-/datum/reagent/fluorine/on_mob_life(mob/living/carbon/M)
-	M.adjustToxLoss(1*REAGENTS_EFFECT_MULTIPLIER, 0)
-	. = 1
-	..()
 
 /datum/reagent/sodium
 	name = "Sodium"
@@ -1111,10 +1044,6 @@
 	if(chems.has_reagent(src.type, 1))
 		mytray.adjustHealth(-round(chems.get_reagent_amount(src.type) * 1))
 		mytray.adjustToxic(round(chems.get_reagent_amount(src.type) * 1))
-
-/datum/reagent/radium/on_mob_life(mob/living/carbon/M)
-	M.apply_effect(2*REAGENTS_EFFECT_MULTIPLIER/M.metabolism_efficiency,EFFECT_IRRADIATE,0)
-	..()
 
 /datum/reagent/radium/reaction_turf(turf/T, reac_volume)
 	if(reac_volume >= 3)
@@ -1175,13 +1104,6 @@
 /datum/reagent/iron/overdose_start(mob/living/M)
 	to_chat(M, "<span class='userdanger'>You start feeling your guts twisting painfully!</span>")
 	SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "[type]_overdose", /datum/mood_event/overdose, name)
-
-/datum/reagent/iron/overdose_process(mob/living/M)
-	if(prob(20))
-		var/obj/item/organ/liver/L = M.getorganslot(ORGAN_SLOT_LIVER)
-		if(L)
-			L.applyOrganDamage(2)
-	..()
 
 /datum/reagent/gold
 	name = "Gold"
@@ -1295,7 +1217,7 @@
 	glass_name = "glass of welder fuel"
 	glass_desc = "Unless you're an industrial tool, this is probably not safe for consumption."
 	pH = 4
-	boiling_point = 400
+	//boiling_point = 400
 
 /datum/reagent/fuel/define_gas()
 	var/datum/gas/G = ..()
@@ -1304,17 +1226,6 @@
 	G.fire_products = list(GAS_CO2 = 2, GAS_H2O = 1)
 	G.fire_temperature = T0C+300
 	return G
-
-/datum/reagent/fuel/reaction_mob(mob/living/M, method=TOUCH, reac_volume)//Splashing people with welding fuel to make them easy to ignite!
-	if(method == TOUCH || method == VAPOR)
-		M.adjust_fire_stacks(reac_volume / 10)
-		return
-	..()
-
-/datum/reagent/fuel/on_mob_life(mob/living/carbon/M)
-	M.adjustToxLoss(1, 0)
-	..()
-	return TRUE
 
 /datum/reagent/space_cleaner
 	name = "Space cleaner"
@@ -1343,9 +1254,6 @@
 		T.wash_cum() //sandstorm edit
 		for(var/obj/effect/decal/cleanable/C in T)
 			qdel(C)
-
-		for(var/mob/living/simple_animal/slime/M in T)
-			M.adjustToxLoss(rand(5,10))
 
 /datum/reagent/space_cleaner/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
 	if(method == TOUCH || method == VAPOR)
@@ -1396,18 +1304,6 @@
 	pH = 2
 	value = REAGENT_VALUE_RARE
 
-/datum/reagent/space_cleaner/ez_clean/on_mob_life(mob/living/carbon/M)
-	M.adjustBruteLoss(3.33)
-	M.adjustFireLoss(3.33)
-	M.adjustToxLoss(3.33)
-	..()
-
-/datum/reagent/space_cleaner/ez_clean/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
-	..()
-	if((method == TOUCH || method == VAPOR) && !issilicon(M))
-		M.adjustBruteLoss(1)
-		M.adjustFireLoss(1)
-
 /datum/reagent/cryptobiolin
 	name = "Cryptobiolin"
 	description = "Cryptobiolin causes confusion and dizziness."
@@ -1432,8 +1328,6 @@
 
 /datum/reagent/impedrezene/on_mob_life(mob/living/carbon/M)
 	M.jitteriness = max(M.jitteriness-5,0)
-	if(prob(80))
-		M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 2*REAGENTS_EFFECT_MULTIPLIER)
 	if(prob(50))
 		M.drowsyness = max(M.drowsyness, 3)
 	if(prob(10))
@@ -1718,12 +1612,6 @@
 	taste_description = "plant food"
 	pH = 3
 
-/datum/reagent/plantnutriment/on_mob_life(mob/living/carbon/M)
-	if(prob(tox_prob))
-		M.adjustToxLoss(1*REAGENTS_EFFECT_MULTIPLIER, 0)
-		. = 1
-	..()
-
 /datum/reagent/plantnutriment/eznutriment
 	name = "E-Z-Nutrient"
 	description = "Contains electrolytes. It's what plants crave."
@@ -1900,7 +1788,7 @@
 	value = REAGENT_VALUE_RARE
 
 /datum/reagent/hair_dye/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
-	if(method == TOUCH || method == VAPOR)
+	if(method == TOUCH)
 		if(M && ishuman(M))
 			var/mob/living/carbon/human/H = M
 			H.hair_color = pick(potential_colors)
@@ -1916,7 +1804,7 @@
 	value = REAGENT_VALUE_UNCOMMON
 
 /datum/reagent/barbers_aid/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
-	if(method == TOUCH || method == VAPOR)
+	if(method == TOUCH)
 		if(M && ishuman(M))
 			var/mob/living/carbon/human/H = M
 			var/datum/sprite_accessory/hair/picked_hair = pick(GLOB.hair_styles_list)
@@ -1949,7 +1837,7 @@
 	taste_description = "bitterness"
 
 /datum/reagent/baldium/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
-	if(method == TOUCH || method == VAPOR)
+	if(method == TOUCH)
 		if(M && ishuman(M))
 			var/mob/living/carbon/human/H = M
 			to_chat(H, "<span class='danger'>Your hair is falling out in clumps!</span>")
@@ -2598,12 +2486,6 @@
 		M.adjustFireLoss(-3, FALSE)
 		if(ishuman(M) && M.blood_volume < BLOOD_VOLUME_NORMAL)
 			M.adjust_integration_blood(3)
-	else
-		M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 3, 150)
-		M.adjustToxLoss(2, FALSE)
-		M.adjustFireLoss(2, FALSE)
-		M.adjustOxyLoss(2, FALSE)
-		M.adjustBruteLoss(2, FALSE)
 	holder.remove_reagent(type, 1)
 	return TRUE
 

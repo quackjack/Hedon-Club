@@ -1,3 +1,6 @@
+// No explosions :)
+
+/*
 /datum/chemical_reaction/reagent_explosion
 	name = "Generic explosive"
 	id = "reagent_explosion"
@@ -496,3 +499,4 @@
 		return ..()
 	else
 		return FALSE
+*/
