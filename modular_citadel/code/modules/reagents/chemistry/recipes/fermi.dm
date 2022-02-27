@@ -35,8 +35,6 @@
 
 	if(!pH)//Dunno how things got here without a pH, but just in case
 		pH = 7
-	var/ImpureTot = 0
-	var/turf/T = get_turf(my_atom)
 	/*	NO EXPLOSIONS INSIDE THE BUILDING
 	if(temp>500)//if hot, start a fire
 		switch(temp)

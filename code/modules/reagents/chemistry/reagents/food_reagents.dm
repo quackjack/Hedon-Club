@@ -223,7 +223,6 @@
 	taste_mult = 1.5
 
 /datum/reagent/consumable/capsaicin/on_mob_life(mob/living/carbon/M)
-	var/heating = 0
 	switch(current_cycle)
 		if(1 to 15)
 			heating = 5 * TEMPERATURE_DAMAGE_COEFFICIENT
@@ -240,7 +239,6 @@
 	pH = 13 //HMM! I wonder
 
 /datum/reagent/consumable/frostoil/on_mob_life(mob/living/carbon/M)
-	var/cooling = 0
 	switch(current_cycle)
 		if(1 to 15)
 			cooling = -10 * TEMPERATURE_DAMAGE_COEFFICIENT
