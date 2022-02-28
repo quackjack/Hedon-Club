@@ -16,11 +16,6 @@
 	if(chems.has_reagent(type, 1))
 		mytray.adjustToxic(round(chems.get_reagent_amount(type) * 2))
 
-/datum/reagent/toxin/on_mob_life(mob/living/carbon/M)
-	if(toxpwr)
-		. = TRUE
-	..()
-
 /datum/reagent/toxin/amatoxin
 	name = "Amatoxin"
 	description = "A powerful poison derived from certain species of mushroom."
@@ -41,25 +36,6 @@
 	value = REAGENT_VALUE_VERY_COMMON
 	pH = 2.3
 
-/datum/reagent/toxin/mutagen/reaction_mob(mob/living/carbon/M, method=TOUCH, reac_volume)
-	if(!..())
-		return
-	if(!M.has_dna())
-		return  //No robots, AIs, aliens, Ians or other mobs should be affected by this.
-	if((method==VAPOR && prob(min(33, reac_volume))) || method==INGEST || method==PATCH || method==INJECT)
-		M.randmuti()
-		if(prob(98))
-			M.easy_randmut(NEGATIVE+MINOR_NEGATIVE)
-		else
-			M.easy_randmut(POSITIVE)
-		M.updateappearance()
-		M.domutcheck()
-	..()
-
-/datum/reagent/toxin/mutagen/on_mob_life(mob/living/carbon/C)
-	C.apply_effect(5,EFFECT_IRRADIATE,0)
-	return ..()
-
 /datum/reagent/toxin/mutagen/on_hydroponics_apply(obj/item/seeds/myseed, datum/reagents/chems, obj/machinery/hydroponics/mytray, mob/user)
 	mytray.mutation_roll(user)
 	if(chems.has_reagent(type, 1))
@@ -77,30 +53,6 @@
 	value = REAGENT_VALUE_RARE //sheets are worth more
 	material = /datum/material/plasma
 
-/datum/reagent/toxin/plasma/on_mob_life(mob/living/carbon/C)
-	if(holder.has_reagent(/datum/reagent/medicine/epinephrine))
-		holder.remove_reagent(/datum/reagent/medicine/epinephrine, 2*REAGENTS_EFFECT_MULTIPLIER)
-	C.adjustPlasma(20)
-	return ..()
-
-/datum/reagent/toxin/plasma/reaction_obj(obj/O, reac_volume)
-	if((!O) || (!reac_volume))
-		return 0
-	var/temp = holder ? holder.chem_temp : T20C
-	O.atmos_spawn_air("plasma=[reac_volume];TEMP=[temp]")
-
-/datum/reagent/toxin/plasma/reaction_turf(turf/open/T, reac_volume)
-	if(istype(T))
-		var/temp = holder ? holder.chem_temp : T20C
-		T.atmos_spawn_air("plasma=[reac_volume];TEMP=[temp]")
-	return
-
-/datum/reagent/toxin/plasma/reaction_mob(mob/living/M, method=TOUCH, reac_volume)//Splashing people with plasma is stronger than fuel!
-	if(method == TOUCH || method == VAPOR)
-		M.adjust_fire_stacks(reac_volume / 5)
-		return
-	..()
-
 /datum/reagent/toxin/lexorin
 	name = "Lexorin"
 	description = "A powerful poison used to stop respiration."
@@ -109,19 +61,6 @@
 	taste_description = "acid"
 	pH = 1.2
 	value = REAGENT_VALUE_RARE
-
-/datum/reagent/toxin/lexorin/on_mob_life(mob/living/carbon/C)
-	. = TRUE
-
-	if(HAS_TRAIT(C, TRAIT_NOBREATH))
-		. = FALSE
-
-	if(.)
-		C.adjustOxyLoss(5, 0)
-		C.losebreath += 2
-		if(prob(20))
-			C.emote("gasp")
-	..()
 
 /datum/reagent/toxin/slimejelly
 	name = "Slime Jelly"
@@ -141,11 +80,6 @@
 	taste_description = "mint"
 	pH = 8
 	value = REAGENT_VALUE_UNCOMMON
-
-/datum/reagent/toxin/minttoxin/on_mob_life(mob/living/carbon/M)
-	if(HAS_TRAIT(M, TRAIT_FAT))
-		M.gib()
-	return ..()
 
 /datum/reagent/toxin/carpotoxin
 	name = "Carpotoxin"
@@ -171,35 +105,6 @@
 	var/fakedeath_active = FALSE
 	pH = 13
 	value = REAGENT_VALUE_EXCEPTIONAL
-
-/datum/reagent/toxin/zombiepowder/on_mob_metabolize(mob/living/L)
-	..()
-	ADD_TRAIT(L, TRAIT_FAKEDEATH, type)
-
-/datum/reagent/toxin/zombiepowder/on_mob_end_metabolize(mob/living/L)
-	L.cure_fakedeath(type)
-	..()
-
-/datum/reagent/toxin/zombiepowder/reaction_mob(mob/living/L, method=TOUCH, reac_volume)
-	L.adjustOxyLoss(0.5*REAGENTS_EFFECT_MULTIPLIER, 0)
-	if(method == INGEST)
-		fakedeath_active = TRUE
-		L.fakedeath(type)
-
-/datum/reagent/toxin/zombiepowder/on_mob_life(mob/living/M)
-	..()
-	if(fakedeath_active)
-		return TRUE
-	switch(current_cycle)
-		if(1 to 5)
-			M.confused += 1
-			M.drowsyness += 1
-			M.slurring += 3
-		if(5 to 8)
-			M.adjustStaminaLoss(40, 0)
-		if(9 to INFINITY)
-			fakedeath_active = TRUE
-			M.fakedeath(type)
 
 /datum/reagent/toxin/ghoulpowder
 	name = "Ghoul Powder"
@@ -289,12 +194,6 @@
 	pH = 11
 	value = REAGENT_VALUE_RARE
 
-/datum/reagent/toxin/spore/on_mob_life(mob/living/carbon/C)
-	C.damageoverlaytemp = 60
-	C.update_damage_hud()
-	C.blur_eyes(3)
-	return ..()
-
 /datum/reagent/toxin/spore_burning
 	name = "Burning Spore Toxin"
 	description = "A natural toxin produced by blob spores that induces combustion in its victim."
@@ -380,11 +279,6 @@
 	toxpwr = 0
 	value = REAGENT_VALUE_UNCOMMON
 
-/datum/reagent/toxin/staminatoxin/on_mob_life(mob/living/carbon/M)
-	data = max(data - 1, 5)
-	..()
-	. = 1
-
 /datum/reagent/toxin/polonium
 	name = "Polonium"
 	description = "An extremely radioactive material in liquid form. Ingestion results in fatal irradiation."
@@ -394,7 +288,6 @@
 	chemical_flags = REAGENT_ALL_PROCESS
 	toxpwr = 0
 	value = REAGENT_VALUE_VERY_RARE
-
 
 /datum/reagent/toxin/histamine
 	name = "Histamine"
@@ -406,22 +299,6 @@
 	toxpwr = 0
 	value = REAGENT_VALUE_UNCOMMON
 
-/datum/reagent/toxin/histamine/on_mob_life(mob/living/carbon/M)
-	if(prob(50))
-		switch(pick(1, 2, 3, 4))
-			if(1)
-				to_chat(M, "<span class='danger'>You can barely see!</span>")
-				M.blur_eyes(3)
-			if(2)
-				M.emote("cough")
-			if(3)
-				M.emote("sneeze")
-			if(4)
-				if(prob(75))
-					to_chat(M, "You scratch at an itch.")
-	..()
-	. = 1
-
 /datum/reagent/toxin/formaldehyde
 	name = "Formaldehyde"
 	description = "Formaldehyde, on its own, is a fairly weak toxin. It contains trace amounts of Histamine, very rarely making it decay into Histamine."
@@ -431,13 +308,6 @@
 	chemical_flags = REAGENT_ALL_PROCESS
 	toxpwr = 1
 
-/datum/reagent/toxin/formaldehyde/on_mob_life(mob/living/carbon/M)
-	if(prob(5))
-		holder.add_reagent(/datum/reagent/toxin/histamine, pick(5,15))
-		holder.remove_reagent(type, 1.2)
-	else
-		return ..()
-
 /datum/reagent/toxin/venom
 	name = "Venom"
 	description = "An exotic poison extracted from highly toxic fauna. Causes scaling amounts of toxin damage and bruising depending and dosage. Often decays into Histamine."
@@ -446,15 +316,6 @@
 	metabolization_rate = 0.25 * REAGENTS_METABOLISM
 	toxpwr = 0
 	value = REAGENT_VALUE_VERY_RARE
-
-/datum/reagent/toxin/venom/on_mob_life(mob/living/carbon/M)
-	toxpwr = 0.2*volume
-	. = 1
-	if(prob(15))
-		M.reagents.add_reagent(/datum/reagent/toxin/histamine, pick(5,10))
-		M.reagents.remove_reagent(type, 1.1)
-	else
-		..()
 
 /datum/reagent/toxin/fentanyl
 	name = "Fentanyl"
@@ -492,10 +353,6 @@
 	metabolization_rate = 0.4 * REAGENTS_METABOLISM
 	toxpwr = 0
 
-/datum/reagent/toxin/itching_powder/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
-	if((method == TOUCH || method == VAPOR) && M.reagents)
-		M.reagents.add_reagent(/datum/reagent/toxin/itching_powder, reac_volume)
-
 /datum/reagent/toxin/initropidril
 	name = "Initropidril"
 	description = "A powerful poison with insidious effects. It can cause stuns, lethal breathing failure, and cardiac arrest."
@@ -515,14 +372,6 @@
 	taste_mult = 0 // undetectable, I guess?
 	value = REAGENT_VALUE_VERY_RARE
 
-/datum/reagent/toxin/pancuronium/on_mob_life(mob/living/carbon/M)
-	if(current_cycle >= 10)
-		M.Stun(40, 0)
-		. = TRUE
-	if(prob(20))
-		M.losebreath += 4
-	..()
-
 /datum/reagent/toxin/sodium_thiopental
 	name = "Sodium Thiopental"
 	description = "Sodium Thiopental induces heavy weakness in its target as well as unconsciousness."
@@ -532,13 +381,6 @@
 	toxpwr = 0
 	value = REAGENT_VALUE_VERY_RARE
 
-/datum/reagent/toxin/sodium_thiopental/on_mob_life(mob/living/carbon/M)
-	if(current_cycle >= 10)
-		M.Sleeping(40, 0)
-	M.adjustStaminaLoss(10*REAGENTS_EFFECT_MULTIPLIER, 0)
-	..()
-	return TRUE
-
 /datum/reagent/toxin/sulfonal
 	name = "Sulfonal"
 	description = "A stealthy poison that deals minor toxin damage and eventually puts the target to sleep."
@@ -546,11 +388,6 @@
 	color = "#7DC3A0"
 	metabolization_rate = 0.125 * REAGENTS_METABOLISM
 	toxpwr = 0.5
-
-/datum/reagent/toxin/sulfonal/on_mob_life(mob/living/carbon/M)
-	if(current_cycle >= 22)
-		M.Sleeping(40, 0)
-	return ..()
 
 /datum/reagent/toxin/amanitin
 	name = "Amanitin"
@@ -579,10 +416,6 @@
 	toxpwr = 1.75
 	value = REAGENT_VALUE_EXCEPTIONAL
 
-/datum/reagent/toxin/coniine/on_mob_life(mob/living/carbon/M)
-	M.losebreath += 5
-	return ..()
-
 /datum/reagent/toxin/spewium
 	name = "Spewium"
 	description = "A powerful emetic, causes uncontrollable vomiting.  May result in vomiting organs at high doses."
@@ -593,21 +426,6 @@
 	toxpwr = 0
 	taste_description = "vomit"
 	value = REAGENT_VALUE_VERY_RARE
-
-/datum/reagent/toxin/spewium/on_mob_life(mob/living/carbon/C)
-	.=..()
-	if(current_cycle >=11 && prob(min(50,current_cycle)))
-		C.vomit(10, prob(10), prob(50), rand(0,4), TRUE)
-		for(var/datum/reagent/toxin/R in C.reagents.reagent_list)
-			if(R != src)
-				C.reagents.remove_reagent(R.type,1)
-
-/datum/reagent/toxin/spewium/overdose_process(mob/living/carbon/C)
-	. = ..()
-	if(current_cycle >=33 && prob(15))
-		C.spew_organ()
-		C.vomit(0, TRUE, TRUE, 4)
-		to_chat(C, "<span class='userdanger'>You feel something lumpy come up as you vomit.</span>")
 
 /datum/reagent/toxin/curare
 	name = "Curare"
@@ -690,14 +508,14 @@
 				animate(transform = -newmatrix, time = 5, easing = QUAD_EASING)
 	*/
 	return ..()
-
+/*
 /datum/reagent/toxin/skewium/on_mob_end_metabolize(mob/living/M)
 	if(M && M.hud_used)
 		var/list/screens = list(M.hud_used.plane_masters["[FLOOR_PLANE]"], M.hud_used.plane_masters["[GAME_PLANE]"], M.hud_used.plane_masters["[LIGHTING_PLANE]"])
 		for(var/whole_screen in screens)
 			animate(whole_screen, transform = matrix(), time = 5, easing = QUAD_EASING)
 	..()
-
+*/
 
 /datum/reagent/toxin/anacea
 	name = "Anacea"
@@ -707,14 +525,6 @@
 	metabolization_rate = 0.08 * REAGENTS_METABOLISM
 	toxpwr = 0.15
 	value = REAGENT_VALUE_VERY_RARE
-
-/datum/reagent/toxin/anacea/on_mob_life(mob/living/carbon/M)
-	var/remove_amt = 5
-	if(holder.has_reagent(/datum/reagent/medicine/calomel) || holder.has_reagent(/datum/reagent/medicine/pen_acid) || holder.has_reagent(/datum/reagent/medicine/pen_acid/pen_jelly))
-		remove_amt = 0.5
-	for(var/datum/reagent/medicine/R in M.reagents.reagent_list)
-		M.reagents.remove_reagent(R.type,remove_amt)
-	return ..()
 
 //ACID
 
@@ -738,18 +548,6 @@
 		mytray.adjustHealth(-round(chems.get_reagent_amount(type) * 1))
 		mytray.adjustToxic(round(chems.get_reagent_amount(type) * 1.5))
 		mytray.adjustWeeds(-rand(1,2))
-
-/datum/reagent/toxin/acid/reaction_obj(obj/O, reac_volume)
-	if(ismob(O.loc)) //handled in human acid_act()
-		return
-	reac_volume = round(reac_volume,0.1)
-	O.acid_act(acidpwr, reac_volume)
-
-/datum/reagent/toxin/acid/reaction_turf(turf/T, reac_volume)
-	if (!istype(T))
-		return
-	reac_volume = round(reac_volume,0.1)
-	T.acid_act(acidpwr, reac_volume)
 
 /datum/reagent/toxin/acid/fluacid
 	name = "Fluorosulfuric acid"
@@ -786,12 +584,6 @@
 	taste_description = "stillness"
 	value = REAGENT_VALUE_RARE
 
-/datum/reagent/toxin/mimesbane/on_mob_metabolize(mob/living/L)
-	ADD_TRAIT(L, TRAIT_EMOTEMUTE, type)
-
-/datum/reagent/toxin/mimesbane/on_mob_end_metabolize(mob/living/L)
-	REMOVE_TRAIT(L, TRAIT_EMOTEMUTE, type)
-
 /datum/reagent/toxin/bonehurtingjuice //oof ouch
 	name = "Bone Hurting Juice"
 	description = "A strange substance that looks a lot like water. Drinking it is oddly tempting. Oof ouch."
@@ -819,14 +611,6 @@
 	taste_description = "tannin"
 	value = REAGENT_VALUE_RARE
 
-/datum/reagent/toxin/bungotoxin/on_mob_life(mob/living/carbon/M)
-	M.confused = M.dizziness //add a tertiary effect here if this is isn't an effective poison.
-	if(current_cycle >= 12 && prob(8))
-		var/tox_message = pick("You feel your heart spasm in your chest.", "You feel faint.","You feel you need to catch your breath.","You feel a prickle of pain in your chest.")
-		to_chat(M, "<span class='notice'>[tox_message]</span>")
-	. = 1
-	..()
-
 /datum/reagent/toxin/leadacetate
 	name = "Lead Acetate"
 	description = "Used hundreds of years ago as a sweetener, before it was realized that it's incredibly poisonous."
@@ -835,9 +619,3 @@
 	toxpwr = 0.5
 	taste_mult = 1.3
 	taste_description = "sugary sweetness"
-
-/datum/reagent/toxin/leadacetate/on_mob_life(mob/living/carbon/M)
-	if(prob(1))
-		to_chat(M, "<span class='notice'>Ah, what was that? You thought you heard something...</span>")
-		M.confused += 5
-	return ..()

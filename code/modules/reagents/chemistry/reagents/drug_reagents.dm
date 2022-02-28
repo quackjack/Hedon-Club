@@ -57,9 +57,6 @@
 		var/smoke_message = pick("You feel relaxed.", "You feel calmed.","You feel alert.","You feel rugged.")
 		to_chat(M, "<span class='notice'>[smoke_message]</span>")
 	SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "smoked", /datum/mood_event/smoked, name)
-	M.AdjustAllImmobility(-20, 0)
-	M.AdjustUnconscious(-20, 0)
-	M.adjustStaminaLoss(-0.5*REAGENTS_EFFECT_MULTIPLIER, 0)
 	..()
 	. = 1
 
@@ -77,8 +74,6 @@
 	if(prob(5))
 		var/high_message = pick("You feel jittery.", "You feel like you gotta go fast.", "You feel like you need to step it up.")
 		to_chat(M, "<span class='notice'>[high_message]</span>")
-	M.AdjustAllImmobility(-20, 0)
-	M.AdjustUnconscious(-20, 0)
 	..()
 	. = 1
 
@@ -120,27 +115,10 @@
 	addiction_threshold = 10
 	value = REAGENT_VALUE_UNCOMMON
 
-/datum/reagent/drug/methamphetamine/on_mob_metabolize(mob/living/L)
-	..()
-	L.add_movespeed_modifier(/datum/movespeed_modifier/reagent/methamphetamine)
-
-/datum/reagent/drug/methamphetamine/on_mob_end_metabolize(mob/living/L)
-	L.remove_movespeed_modifier(/datum/movespeed_modifier/reagent/methamphetamine)
-	..()
-
 /datum/reagent/drug/methamphetamine/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
 	var/high_message = pick("You feel hyper.", "You feel like you need to go faster.", "You feel like you can run the world.")
 	if(DT_PROB(2.5, delta_time))
 		to_chat(M, span_notice("[high_message]"))
-	// SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "tweaking", /datum/mood_event/stimulant_medium, name)
-	M.AdjustStun(-40 * REAGENTS_EFFECT_MULTIPLIER * delta_time)
-	M.AdjustKnockdown(-40 * REAGENTS_EFFECT_MULTIPLIER * delta_time)
-	M.AdjustUnconscious(-40 * REAGENTS_EFFECT_MULTIPLIER * delta_time)
-	M.AdjustParalyzed(-40 * REAGENTS_EFFECT_MULTIPLIER * delta_time)
-	M.AdjustImmobilized(-40 * REAGENTS_EFFECT_MULTIPLIER * delta_time)
-	M.adjustStaminaLoss(-2 * REAGENTS_EFFECT_MULTIPLIER * delta_time, 0)
-	M.Jitter(2 * REAGENTS_EFFECT_MULTIPLIER * delta_time)
-	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, rand(1, 4) * REAGENTS_EFFECT_MULTIPLIER * delta_time)
 	if(DT_PROB(2.5, delta_time))
 		M.emote(pick("twitch", "shiver"))
 	..()
@@ -203,31 +181,11 @@
 	pH = 8.2
 	value = REAGENT_VALUE_RARE
 
-/datum/reagent/drug/bath_salts/on_mob_metabolize(mob/living/L)
-	..()
-	ADD_TRAIT(L, TRAIT_STUNIMMUNE, type)
-	ADD_TRAIT(L, TRAIT_SLEEPIMMUNE, type)
-	if(iscarbon(L))
-		var/mob/living/carbon/C = L
-		rage = new()
-		C.gain_trauma(rage, TRAUMA_RESILIENCE_ABSOLUTE)
-
-/datum/reagent/drug/bath_salts/on_mob_end_metabolize(mob/living/L)
-	REMOVE_TRAIT(L, TRAIT_STUNIMMUNE, type)
-	REMOVE_TRAIT(L, TRAIT_SLEEPIMMUNE, type)
-	if(rage)
-		QDEL_NULL(rage)
-	..()
-
 /datum/reagent/drug/bath_salts/on_mob_life(mob/living/carbon/M)
 	var/high_message = pick("You feel amped up.", "You feel ready.", "You feel like you can push it to the limit.")
 	if(prob(5))
 		to_chat(M, "<span class='notice'>[high_message]</span>")
-	M.adjustStaminaLoss(-5, 0)
 	M.hallucination += 5
-	if(CHECK_MOBILITY(M, MOBILITY_MOVE) && !ismovable(M.loc))
-		step(M, pick(GLOB.cardinals))
-		step(M, pick(GLOB.cardinals))
 	..()
 	. = 1
 
@@ -298,7 +256,6 @@
 	var/high_message = pick("You feel amped up.", "You feel ready.", "You feel like you can push it to the limit.")
 	if(prob(5))
 		to_chat(M, "<span class='notice'>[high_message]</span>")
-	M.adjustStaminaLoss(-10, 0)
 	..()
 	. = 1
 
@@ -389,32 +346,6 @@
 	addiction_stage4_end = 240
 	pH = 12.5
 	value = REAGENT_VALUE_EXCEPTIONAL
-
-/datum/reagent/drug/skooma/on_mob_metabolize(mob/living/L)
-	. = ..()
-	L.add_movespeed_modifier(/datum/movespeed_modifier/reagent/skooma)
-	L.action_cooldown_mod *= 2
-	if(ishuman(L))
-		var/mob/living/carbon/human/H = L
-		if(H.physiology)
-			H.physiology.stamina_mod *= 0.5
-		if(H.dna && H.dna.species)
-			H.dna.species.punchdamagehigh += 4
-			H.dna.species.punchdamagelow  += 4
-			H.dna.species.punchstunthreshold -= 2
-
-/datum/reagent/drug/skooma/on_mob_end_metabolize(mob/living/L)
-	. = ..()
-	L.remove_movespeed_modifier(/datum/movespeed_modifier/reagent/skooma)
-	L.action_cooldown_mod *= 0.5
-	if(ishuman(L))
-		var/mob/living/carbon/human/H = L
-		if(H.physiology)
-			H.physiology.stamina_mod *= 2
-		if(H.dna && H.dna.species)
-			H.dna.species.punchdamagehigh -= 4
-			H.dna.species.punchdamagelow -= 4
-			H.dna.species.punchstunthreshold += 2
 
 /datum/reagent/drug/skooma/on_mob_life(mob/living/carbon/M)
 	if(prob(10))
@@ -513,11 +444,6 @@
 
 /datum/reagent/drug/aphrodisiacplus/on_mob_life(mob/living/M)
 	if(M && M.client?.prefs.arousable && !(M.client?.prefs.cit_toggles & NO_APHRO))
-		if(prob(5))
-			if(prob(current_cycle))
-				M.say(pick("Hnnnnngghh...", "Ohh...", "Mmnnn..."))
-			else
-				M.emote(pick("moan","blush"))
 		if(prob(5))
 			var/aroused_message
 			if(current_cycle>25)
