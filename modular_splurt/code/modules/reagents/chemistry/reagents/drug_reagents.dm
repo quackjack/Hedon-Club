@@ -5,22 +5,6 @@
 	color = "#000000"
 	overdose_threshold = 30
 
-/datum/reagent/drug/maint/tar/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
-	. = ..()
-
-	M.AdjustStun(-10 * REAGENTS_EFFECT_MULTIPLIER * delta_time)
-	M.AdjustKnockdown(-10 * REAGENTS_EFFECT_MULTIPLIER * delta_time)
-	M.AdjustUnconscious(-10 * REAGENTS_EFFECT_MULTIPLIER * delta_time)
-	M.AdjustParalyzed(-10 * REAGENTS_EFFECT_MULTIPLIER * delta_time)
-	M.AdjustImmobilized(-10 * REAGENTS_EFFECT_MULTIPLIER * delta_time)
-	M.adjustOrganLoss(ORGAN_SLOT_LIVER, 1.5 * REAGENTS_EFFECT_MULTIPLIER * delta_time)
-
-/datum/reagent/drug/maint/tar/overdose_process(mob/living/M, delta_time, times_fired)
-	. = ..()
-
-	M.adjustToxLoss(5 * REAGENTS_EFFECT_MULTIPLIER * delta_time)
-	M.adjustOrganLoss(ORGAN_SLOT_LIVER, 3 * REAGENTS_EFFECT_MULTIPLIER * delta_time)
-
 /datum/reagent/drug/copium
 	name = "Copium"
 	description = "Cope and sssethe"
@@ -52,15 +36,3 @@
 		H.adjust_disgust(20)
 		to_chat(H, "<span class='warning'>I can't stand it anymore!</span>")
 	..()
-
-/datum/reagent/drug/copium/reaction_obj(obj/O, volume)
-	if ((!O) || (!volume))
-		return 0
-	var/temp = holder ? holder.chem_temp : T20C
-	O.atmos_spawn_air("copium=[volume];TEMP=[temp]")
-
-/datum/reagent/drug/reaction_turf(turf/open/T, volume)
-	if (istype(T))
-		var/temp = holder ? holder.chem_temp : T20C
-		T.atmos_spawn_air("copium=[volume];TEMP=[temp]")
-	return

@@ -120,38 +120,6 @@
 	var/fry_temperature = 450 //Around ~350 F (117 C) which deep fryers operate around in the real world
 	var/boiling //Used in mob life to determine if the oil kills, and only on touch application
 
-/datum/reagent/consumable/cooking_oil/reaction_obj(obj/O, reac_volume)
-	if(holder && holder.chem_temp >= fry_temperature)
-		if(isitem(O) && !O.GetComponent(/datum/component/fried) && !(O.resistance_flags & (FIRE_PROOF|INDESTRUCTIBLE)) && (!O.reagents || isfood(O))) //don't fry stuff we shouldn't
-			O.loc.visible_message("<span class='warning'>[O] rapidly fries as it's splashed with hot oil! Somehow.</span>")
-			O.fry(volume)
-			if(O.reagents)
-				O.reagents.add_reagent(/datum/reagent/consumable/cooking_oil, reac_volume)
-
-/datum/reagent/consumable/cooking_oil/reaction_mob(mob/living/M, method = TOUCH, reac_volume, show_message = 1, touch_protection = 0)
-	if(!istype(M))
-		return
-	if(holder && holder.chem_temp >= fry_temperature)
-		boiling = TRUE
-	if(method == VAPOR || method == TOUCH) //Directly coats the mob, and doesn't go into their bloodstream
-		if(boiling)
-			M.visible_message("<span class='warning'>The boiling oil sizzles as it covers [M]!</span>", \
-			"<span class='userdanger'>You're covered in boiling oil!</span>")
-			M.emote("scream")
-			playsound(M, 'sound/machines/fryer/deep_fryer_emerge.ogg', 25, TRUE)
-			var/oil_damage = min((holder.chem_temp / fry_temperature) * 0.33,1) //Damage taken per unit
-			M.adjustFireLoss(oil_damage * min(reac_volume,20)) //Damage caps at 20
-	else
-		..()
-	return TRUE
-
-/datum/reagent/consumable/cooking_oil/reaction_turf(turf/open/T, reac_volume)
-	if(!istype(T) || isgroundlessturf(T))
-		return
-	if(reac_volume >= 5 && holder && holder.chem_temp >= fry_temperature)
-		T.MakeSlippery(TURF_WET_LUBE, min_wet_time = 10 SECONDS, wet_time_to_add = reac_volume * 1.5 SECONDS)
-		T.fry(reac_volume/4)
-
 /datum/reagent/consumable/sugar
 	name = "Sugar"
 	description = "The organic compound commonly known as table sugar and sometimes called saccharose. This white, odorless, crystalline powder has a pleasing, sweet taste."
@@ -170,16 +138,6 @@
 	if(chems.has_reagent(type, 1))
 		mytray.adjustWeeds(rand(2,3))
 		mytray.adjustPests(rand(1,2))
-
-/datum/reagent/consumable/sugar/overdose_start(mob/living/M)
-	to_chat(M, "<span class='userdanger'>You go into hyperglycaemic shock! Lay off the twinkies!</span>")
-	M.AdjustSleeping(600, FALSE)
-	. = 1
-
-/datum/reagent/consumable/sugar/overdose_process(mob/living/M)
-	M.AdjustSleeping(40, FALSE)
-	..()
-	. = 1
 
 /datum/reagent/consumable/virus_food
 	name = "Virus Food"
@@ -222,30 +180,6 @@
 	taste_description = "hot peppers"
 	taste_mult = 1.5
 
-/datum/reagent/consumable/capsaicin/on_mob_life(mob/living/carbon/M)
-	var/heating = 0
-	switch(current_cycle)
-		if(1 to 15)
-			heating = 5 * TEMPERATURE_DAMAGE_COEFFICIENT
-			if(holder.has_reagent(/datum/reagent/cryostylane))
-				holder.remove_reagent(/datum/reagent/cryostylane, 5)
-			if(isslime(M))
-				heating = rand(5,20)
-		if(15 to 25)
-			heating = 10 * TEMPERATURE_DAMAGE_COEFFICIENT
-			if(isslime(M))
-				heating = rand(10,20)
-		if(25 to 35)
-			heating = 15 * TEMPERATURE_DAMAGE_COEFFICIENT
-			if(isslime(M))
-				heating = rand(15,20)
-		if(35 to INFINITY)
-			heating = 20 * TEMPERATURE_DAMAGE_COEFFICIENT
-			if(isslime(M))
-				heating = rand(20,25)
-	M.adjust_bodytemperature(heating)
-	..()
-
 /datum/reagent/consumable/frostoil
 	name = "Frost Oil"
 	description = "A special oil that noticably chills the body. Extracted from Icepeppers and slimes."
@@ -254,115 +188,12 @@
 	value = REAGENT_VALUE_COMMON
 	pH = 13 //HMM! I wonder
 
-/datum/reagent/consumable/frostoil/on_mob_life(mob/living/carbon/M)
-	var/cooling = 0
-	switch(current_cycle)
-		if(1 to 15)
-			cooling = -10 * TEMPERATURE_DAMAGE_COEFFICIENT
-			if(holder.has_reagent(/datum/reagent/consumable/capsaicin))
-				holder.remove_reagent(/datum/reagent/consumable/capsaicin, 5)
-			if(isslime(M))
-				cooling = -rand(5,20)
-		if(15 to 25)
-			cooling = -20 * TEMPERATURE_DAMAGE_COEFFICIENT
-			if(isslime(M))
-				cooling = -rand(10,20)
-		if(25 to 35)
-			cooling = -30 * TEMPERATURE_DAMAGE_COEFFICIENT
-			if(prob(1))
-				M.emote("shiver")
-			if(isslime(M))
-				cooling = -rand(15,20)
-		if(35 to INFINITY)
-			cooling = -40 * TEMPERATURE_DAMAGE_COEFFICIENT
-			if(prob(5))
-				M.emote("shiver")
-			if(isslime(M))
-				cooling = -rand(20,25)
-	M.adjust_bodytemperature(cooling, 50)
-	..()
-
-/datum/reagent/consumable/frostoil/reaction_turf(turf/T, reac_volume)
-	if(reac_volume >= 5)
-		for(var/mob/living/simple_animal/slime/M in T)
-			M.adjustToxLoss(rand(15,30))
-	if(reac_volume >= 1) // Make Freezy Foam and anti-fire grenades!
-		if(isopenturf(T))
-			var/turf/open/OT = T
-			OT.MakeSlippery(wet_setting=TURF_WET_ICE, min_wet_time=100, wet_time_to_add=reac_volume SECONDS) // Is less effective in high pressure/high heat capacity environments. More effective in low pressure.
-			OT.air.set_temperature(OT.air.return_temperature() - MOLES_CELLSTANDARD*100*reac_volume/OT.air.heat_capacity()) // reduces environment temperature by 5K per unit.
-
 /datum/reagent/consumable/condensedcapsaicin
 	name = "Condensed Capsaicin"
 	description = "A chemical agent used for self-defense and in police work."
 	color = "#B31008" // rgb: 179, 16, 8
 	taste_description = "scorching agony"
 	pH = 7.4
-
-/datum/reagent/consumable/condensedcapsaicin/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
-	if(!ishuman(M) && !ismonkey(M))
-		return
-
-	var/mob/living/carbon/victim = M
-	if(method == TOUCH || method == VAPOR)
-		//check for protection
-		var/mouth_covered = 0
-		var/eyes_covered = 0
-		var/obj/item/safe_thing = null
-
-		//monkeys and humans can have masks
-		if( victim.wear_mask )
-			if ( victim.wear_mask.flags_cover & MASKCOVERSEYES )
-				eyes_covered = 1
-				safe_thing = victim.wear_mask
-			if ( victim.wear_mask.flags_cover & MASKCOVERSMOUTH )
-				mouth_covered = 1
-				safe_thing = victim.wear_mask
-
-		//only humans can have helmets and glasses
-		if(ishuman(victim))
-			var/mob/living/carbon/human/H = victim
-			if( H.head )
-				if ( H.head.flags_cover & HEADCOVERSEYES )
-					eyes_covered = 1
-					safe_thing = H.head
-				if ( H.head.flags_cover & HEADCOVERSMOUTH )
-					mouth_covered = 1
-					safe_thing = H.head
-			if(H.glasses)
-				eyes_covered = 1
-				if ( !safe_thing )
-					safe_thing = H.glasses
-
-		//actually handle the pepperspray effects
-		if ( eyes_covered && mouth_covered )
-			return
-		else if ( mouth_covered )	// Reduced effects if partially protected
-			if(prob(5))
-				victim.emote("scream")
-			victim.blur_eyes(3)
-			victim.blind_eyes(2)
-			victim.confused = max(M.confused, 3)
-			victim.damageoverlaytemp = 60
-			victim.DefaultCombatKnockdown(80, override_hardstun = 0.1, override_stamdmg = min(reac_volume * 3, 15))
-			victim.add_movespeed_modifier(/datum/movespeed_modifier/reagent/pepperspray)
-			addtimer(CALLBACK(victim, /mob.proc/remove_movespeed_modifier, /datum/movespeed_modifier/reagent/pepperspray), 10 SECONDS)
-			return
-		else if ( eyes_covered ) // Eye cover is better than mouth cover
-			victim.blur_eyes(3)
-			victim.damageoverlaytemp = 30
-			return
-		else // Oh dear :D
-			if(prob(5))
-				victim.emote("scream")
-			victim.blur_eyes(5)
-			victim.blind_eyes(3)
-			victim.confused = max(M.confused, 6)
-			victim.damageoverlaytemp = 75
-			victim.DefaultCombatKnockdown(80, override_hardstun = 0.1, override_stamdmg = min(reac_volume * 5, 25))
-			victim.add_movespeed_modifier(/datum/movespeed_modifier/reagent/pepperspray)
-			addtimer(CALLBACK(victim, /mob.proc/remove_movespeed_modifier, /datum/movespeed_modifier/reagent/pepperspray), 10 SECONDS)
-		victim.update_damage_hud()
 
 /datum/reagent/consumable/condensedcapsaicin/on_mob_life(mob/living/carbon/M)
 	if(prob(5))
@@ -375,19 +206,6 @@
 	reagent_state = SOLID
 	color = "#FFFFFF" // rgb: 255,255,255
 	taste_description = "salt"
-
-/datum/reagent/consumable/sodiumchloride/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
-	if(!istype(M))
-		return
-	if(M.has_bane(BANE_SALT))
-		M.mind.disrupt_spells(-200)
-
-/datum/reagent/consumable/sodiumchloride/reaction_turf(turf/T, reac_volume) //Creates an umbra-blocking salt pile
-	if(!istype(T))
-		return
-	if(reac_volume < 1)
-		return
-	new/obj/effect/decal/cleanable/salt(T)
 
 /datum/reagent/consumable/blackpepper
 	name = "Black Pepper"
@@ -413,10 +231,6 @@
 	glass_name = "glass of chocolate"
 	glass_desc = "Tasty."
 
-/datum/reagent/consumable/hot_coco/on_mob_life(mob/living/carbon/M)
-	M.adjust_bodytemperature(5 * TEMPERATURE_DAMAGE_COEFFICIENT, 0, BODYTEMP_NORMAL)
-	..()
-
 /datum/reagent/drug/mushroomhallucinogen
 	name = "Mushroom Hallucinogen"
 	description = "A strong hallucinogenic drug derived from certain species of mushroom."
@@ -425,28 +239,6 @@
 	taste_description = "mushroom"
 	pH = 11
 	value = REAGENT_VALUE_COMMON
-
-/datum/reagent/drug/mushroomhallucinogen/on_mob_life(mob/living/carbon/M)
-	M.slurring = max(M.slurring,50)
-	switch(current_cycle)
-		if(1 to 5)
-			M.Dizzy(5)
-			M.set_drugginess(30)
-			if(prob(10))
-				M.emote(pick("twitch","giggle"))
-		if(5 to 10)
-			M.Jitter(10)
-			M.Dizzy(10)
-			M.set_drugginess(35)
-			if(prob(20))
-				M.emote(pick("twitch","giggle"))
-		if (10 to INFINITY)
-			M.Jitter(20)
-			M.Dizzy(20)
-			M.set_drugginess(40)
-			if(prob(30))
-				M.emote(pick("twitch","giggle"))
-	..()
 
 /datum/reagent/consumable/garlic //NOTE: having garlic in your blood stops vampires from biting you.
 	name = "Garlic Juice"
@@ -457,54 +249,12 @@
 	metabolization_rate = 0.15 * REAGENTS_METABOLISM
 	value = REAGENT_VALUE_COMMON
 
-/datum/reagent/consumable/garlic/on_mob_life(mob/living/carbon/M)
-	if(isvampire(M)) //incapacitating but not lethal. Unfortunately, vampires cannot vomit.
-		if(prob(min(25, current_cycle)))
-			to_chat(M, "<span class='danger'>You can't get the scent of garlic out of your nose! You can barely think...</span>")
-			M.Stun(10)
-			M.Jitter(10)
-			return
-
-	else if(ishuman(M))
-		var/mob/living/carbon/human/H = M
-		if(H.job == "Cook")
-			if(prob(20)) //stays in the system much longer than sprinkles/banana juice, so heals slower to partially compensate
-				H.heal_bodypart_damage(1, 1, 0)
-				. = 1
-	..()
-
-/datum/reagent/consumable/garlic/reaction_mob(mob/living/M, method, reac_volume)
-	if(AmBloodsucker(M, TRUE)) //Theyll be immune to garlic as long as they masquarade, but they cant do it if they already have it.
-		switch(method)
-			if(INGEST)
-				if(prob(min(30, current_cycle)))
-					to_chat(M, "<span class='warning'>You cant get the smell of garlic out of your nose! You cant think straight because of it!</span>")
-					M.Jitter(15)
-				if(prob(min(15, current_cycle)))
-					M.visible_message("<span class='danger'>Something you ate is burning your stomach!</span>", "<span class='warning'>[M] clutches their stomach and falls to the ground!</span>")
-					M.Knockdown(20)
-					M.emote("scream")
-				if(prob(min(5, current_cycle)) && iscarbon(M))
-					var/mob/living/carbon/C
-					C.vomit()
-			if(INJECT)
-				if(prob(min(20, current_cycle)))
-					to_chat(M, "<span class='warning'>You feel like your veins are boiling!</span>")
-					M.emote("scream")
-					M.adjustFireLoss(5)
-	..()
 /datum/reagent/consumable/sprinkles
 	name = "Sprinkles"
 	description = "Multi-colored little bits of sugar, commonly found on donuts. Loved by cops."
 	color = "#FF00FF" // rgb: 255, 0, 255
 	taste_description = "childhood whimsy"
 	value = REAGENT_VALUE_COMMON
-
-/datum/reagent/consumable/sprinkles/on_mob_life(mob/living/carbon/M)
-	if(M.mind && HAS_TRAIT(M.mind, TRAIT_LAW_ENFORCEMENT_METABOLISM))
-		M.heal_bodypart_damage(1,1, 0)
-		. = 1
-	..()
 
 /datum/reagent/consumable/peanut_butter
 	name = "Peanut Butter"
@@ -521,17 +271,6 @@
 	value = REAGENT_VALUE_UNCOMMON
 	color = "#302000" // rgb: 48, 32, 0
 	taste_description = "slime"
-
-/datum/reagent/consumable/cornoil/reaction_turf(turf/open/T, reac_volume)
-	if (!istype(T))
-		return
-	T.MakeSlippery(TURF_WET_LUBE, min_wet_time = 10 SECONDS, wet_time_to_add = reac_volume*2 SECONDS)
-	var/obj/effect/hotspot/hotspot = (locate(/obj/effect/hotspot) in T)
-	if(hotspot)
-		var/datum/gas_mixture/lowertemp = T.return_air()
-		lowertemp.set_temperature(max( min(lowertemp.return_temperature()-2000,lowertemp.return_temperature() / 2) ,TCMB))
-		lowertemp.react(src)
-		qdel(hotspot)
 
 /datum/reagent/consumable/enzyme
 	name = "Universal Enzyme"
@@ -561,10 +300,6 @@
 	color = "#3E4A00" // rgb: 62, 74, 0
 	taste_description = "your imprisonment"
 
-/datum/reagent/consumable/hot_ramen/on_mob_life(mob/living/carbon/M)
-	M.adjust_bodytemperature(10 * TEMPERATURE_DAMAGE_COEFFICIENT, 0, BODYTEMP_NORMAL)
-	..()
-
 /datum/reagent/consumable/hell_ramen
 	name = "Hell Ramen"
 	description = "The noodles are boiled, the flavors are artificial, just like being back in school."
@@ -572,23 +307,12 @@
 	color = "#302000" // rgb: 48, 32, 0
 	taste_description = "wet and cheap noodles on fire"
 
-/datum/reagent/consumable/hell_ramen/on_mob_life(mob/living/carbon/M)
-	M.adjust_bodytemperature(10 * TEMPERATURE_DAMAGE_COEFFICIENT)
-	..()
-
 /datum/reagent/consumable/flour
 	name = "Flour"
 	description = "This is what you rub all over yourself to pretend to be a ghost."
 	reagent_state = SOLID
 	color = "#FFFFFF" // rgb: 0, 0, 0
 	taste_description = "chalky wheat"
-
-/datum/reagent/consumable/flour/reaction_turf(turf/T, reac_volume)
-	if(!isspaceturf(T))
-		var/obj/effect/decal/cleanable/flour/reagentdecal = new/obj/effect/decal/cleanable/flour(T)
-		reagentdecal = locate() in T //Might have merged with flour already there.
-		if(reagentdecal)
-			reagentdecal.reagents.add_reagent(/datum/reagent/consumable/flour, reac_volume)
 
 /datum/reagent/consumable/cherryjelly
 	name = "Cherry Jelly"
@@ -655,23 +379,6 @@
 	metabolization_rate = 1 * REAGENTS_METABOLISM
 	taste_description = "sweetness"
 
-/datum/reagent/consumable/honey/on_mob_life(mob/living/carbon/M)
-	M.reagents.add_reagent(/datum/reagent/consumable/sugar,3)
-	if(prob(55))
-		M.adjustBruteLoss(-1*REAGENTS_EFFECT_MULTIPLIER, 0)
-		M.adjustFireLoss(-1*REAGENTS_EFFECT_MULTIPLIER, 0)
-		M.adjustOxyLoss(-1*REAGENTS_EFFECT_MULTIPLIER, 0)
-		M.adjustToxLoss(-1*REAGENTS_EFFECT_MULTIPLIER, 0, TRUE) //heals TOXINLOVERs
-	..()
-
-/datum/reagent/consumable/honey/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
-	if(iscarbon(M) && (method in list(TOUCH, VAPOR, PATCH)))
-		var/mob/living/carbon/C = M
-		for(var/s in C.surgeries)
-			var/datum/surgery/S = s
-			S.success_multiplier = max(0.6, S.success_multiplier) // +60% success probability on each step, compared to bacchus' blessing's ~46%
-	..()
-
 /datum/reagent/consumable/mayonnaise
 	name = "Mayonnaise"
 	description = "An white and oily mixture of mixed egg yolks."
@@ -687,37 +394,6 @@
 	taste_description = "bitterness"
 	pH = 5
 	value = REAGENT_VALUE_COMMON
-
-/datum/reagent/consumable/tearjuice/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
-	if(!istype(M))
-		return
-	var/unprotected = FALSE
-	switch(method)
-		if(INGEST)
-			unprotected = TRUE
-		if(INJECT)
-			unprotected = FALSE
-		else	//Touch or vapor
-			if(!M.is_mouth_covered() && !M.is_eyes_covered())
-				unprotected = TRUE
-	if(unprotected)
-		if(!M.getorganslot(ORGAN_SLOT_EYES))	//can't blind somebody with no eyes
-			to_chat(M, "<span class = 'notice'>Your eye sockets feel wet.</span>")
-		else
-			if(!M.eye_blurry)
-				to_chat(M, "<span class = 'warning'>Tears well up in your eyes!</span>")
-			M.blind_eyes(2)
-			M.blur_eyes(5)
-	..()
-
-/datum/reagent/consumable/tearjuice/on_mob_life(mob/living/carbon/M)
-	..()
-	if(M.eye_blurry)	//Don't worsen vision if it was otherwise fine
-		M.blur_eyes(4)
-		if(prob(10))
-			to_chat(M, "<span class = 'warning'>Your eyes sting!</span>")
-			M.blind_eyes(2)
-
 
 /datum/reagent/consumable/nutriment/stabilized
 	name = "Stabilized Nutriment"
@@ -740,19 +416,6 @@
 	pH = 12
 	value = REAGENT_VALUE_RARE
 
-/datum/reagent/consumable/entpoly/on_mob_life(mob/living/carbon/M)
-	if(current_cycle >= 10)
-		M.Unconscious(40, 0)
-		. = 1
-	if(prob(20))
-		M.losebreath += 4
-		M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 2*REAGENTS_EFFECT_MULTIPLIER, 150)
-		M.adjustToxLoss(3*REAGENTS_EFFECT_MULTIPLIER,0)
-		M.adjustStaminaLoss(10*REAGENTS_EFFECT_MULTIPLIER,0)
-		M.blur_eyes(5)
-		. = TRUE
-	..()
-
 /datum/reagent/consumable/tinlux
 	name = "Tinea Luxor"
 	description = "A stimulating ichor which causes luminescent fungi to grow on the skin. "
@@ -760,12 +423,6 @@
 	taste_description = "tingling mushroom"
 	pH = 11.2
 	value = REAGENT_VALUE_RARE
-
-/datum/reagent/consumable/tinlux/reaction_mob(mob/living/M)
-	M.set_light(2)
-
-/datum/reagent/consumable/tinlux/on_mob_end_metabolize(mob/living/M)
-	M.set_light(-2)
 
 /datum/reagent/consumable/vitfro
 	name = "Vitrium Froth"
@@ -797,14 +454,6 @@
 	nutriment_factor = 5 * REAGENTS_METABOLISM
 	color = "#97ee63"
 	taste_description = "pure electricity"
-
-/datum/reagent/consumable/liquidelectricity/reaction_mob(mob/living/M, method=TOUCH, reac_volume) //can't be on life because of the way blood works.
-	if((method == INGEST || method == INJECT || method == PATCH) && iscarbon(M))
-
-		var/mob/living/carbon/C = M
-		var/obj/item/organ/stomach/ethereal/stomach = C.getorganslot(ORGAN_SLOT_STOMACH)
-		if(istype(stomach))
-			stomach.adjust_charge(reac_volume * REAGENTS_EFFECT_MULTIPLIER)
 
 /datum/reagent/consumable/liquidelectricity/on_mob_life(mob/living/carbon/M)
 	if(prob(25) && !isethereal(M))
@@ -871,10 +520,6 @@
 	taste_description = "smoke"
 	overdose_threshold = 25
 	value = REAGENT_VALUE_COMMON
-
-/datum/reagent/consumable/char/overdose_process(mob/living/carbon/M)
-	if(prob(10))
-		M.say(pick("I hate my grill.", "I just want to grill something right for once...", "I wish I could just go on my lawnmower and cut the grass.", "Yep, Tetris. That was a good game..."))
 
 /datum/reagent/consumable/bbqsauce
 	name = "BBQ Sauce"
