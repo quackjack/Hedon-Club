@@ -15,9 +15,11 @@
 /obj/item/clothing/glasses/chameleon/ignoring/equipped(mob/user, slot)
 	. = ..()
 	if(slot == ITEM_SLOT_EYES)
-		return
-	ignore_chads(user)
-	RegisterSignal(user, COMSIG_MOB_CLIENT_LOGIN, .proc/client_logged_in)
+		ignore_chads(user)
+		RegisterSignal(user, COMSIG_MOB_CLIENT_LOGIN, .proc/client_logged_in)
+	else
+		acknowledge_chads(user)
+		UnregisterSignal(user, COMSIG_MOB_CLIENT_LOGIN)
 
 /obj/item/clothing/glasses/chameleon/ignoring/dropped(mob/user)
 	. = ..()
