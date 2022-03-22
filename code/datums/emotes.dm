@@ -68,14 +68,19 @@
 		if(M.stat == DEAD && M.client && (M.client.prefs && (M.client.prefs.chat_toggles & CHAT_GHOSTSIGHT)) && !(M in viewers(T, null)) && (user.client)) //SKYRAT CHANGE - only user controlled mobs show their emotes to all-seeing ghosts, to reduce chat spam
 			M.show_message(dchatmsg) //SKYRAT CHANGE
 
+	var/list/i_dont_even_know_you = list()
+	for(var/mob/M in view(DEFAULT_MESSAGE_RANGE, user))
+		if(user && HAS_TRAIT_FROM(user, TRAIT_IGNORED, "[REF(M)]"))
+			i_dont_even_know_you += M
+
 	if(emote_type == EMOTE_AUDIBLE)
-		user.audible_message(dchatmsg, runechat_popup = chat_popup, rune_msg = msg)
+		user.audible_message(dchatmsg, ignored_mobs = i_dont_even_know_you, runechat_popup = chat_popup, rune_msg = msg)
 	else if(emote_type == EMOTE_VISIBLE)
-		user.visible_message(dchatmsg, runechat_popup = chat_popup, rune_msg = msg)
+		user.visible_message(dchatmsg, ignored_mobs = i_dont_even_know_you, runechat_popup = chat_popup, rune_msg = msg)
 	else if(emote_type == EMOTE_BOTH)
-		user.visible_message(dchatmsg, blind_message = msg, runechat_popup = chat_popup, rune_msg = msg)
+		user.visible_message(dchatmsg, blind_message = msg, ignored_mobs = i_dont_even_know_you, runechat_popup = chat_popup, rune_msg = msg)
 	else if(emote_type == EMOTE_OMNI)
-		user.visible_message(dchatmsg, omni = TRUE, runechat_popup = chat_popup, rune_msg = msg)
+		user.visible_message(dchatmsg, omni = TRUE, ignored_mobs = i_dont_even_know_you, runechat_popup = chat_popup, rune_msg = msg)
 	//Skyrat change
 	if(image_popup)
 		flick_emote_popup_on_mob(user, image_popup, 40)
@@ -157,4 +162,7 @@
 /datum/emote/sound/run_emote(mob/user, params)
 	. = ..()
 	if(.)
-		playsound(user.loc, sound, volume, vary)
+		for(var/mob/M in view(DEFAULT_MESSAGE_RANGE, user))
+			if(user && HAS_TRAIT_FROM(user, TRAIT_IGNORED, "[REF(M)]"))
+				continue
+			M.playsound_local(user.loc, sound, volume, vary)
