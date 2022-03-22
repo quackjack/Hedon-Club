@@ -3855,6 +3855,7 @@
 #include "modular_citadel\code\modules\vectorcrafts\vectorcraft.dm"
 #include "modular_citadel\code\modules\vectorcrafts\vectortruck.dm"
 #include "modular_citadel\code\modules\vectorcrafts\vectorvariants.dm"
+#include "modular_hedon\code\modules\mapping\teleporter.dm"
 #include "modular_sand\code\_globalvars\lists\misc.dm"
 #include "modular_sand\code\_globalvars\lists\objects.dm"
 #include "modular_sand\code\_onclick\hud\hud.dm"
