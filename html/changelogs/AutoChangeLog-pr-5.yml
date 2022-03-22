@@ -1,0 +1,5 @@
+author: SandPoot
+delete-after: true
+changes:
+  - code_imp: Some scientists worked on the ignoring glasses a bit more and implemented
+      a visual displacer. (You can no longer see ignored people's emotes)
