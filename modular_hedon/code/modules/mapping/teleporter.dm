@@ -45,10 +45,10 @@ GLOBAL_LIST_INIT(hedon_teleporters, list())
 
 /// Basically the entire functionally of this thing is here.
 /turf/closed/indestructible/teleporter/proc/do_the_thing(mob/living/person)
-	if(istype(person) && (stat == CONSCIOUS))
+	if(istype(person) && (person.stat == CONSCIOUS))
 		to_chat(person, enter_message)
 		person.forceMove(pick(GLOB.newplayer_start))
-		var/atom/movable/screen/fullscreen/screen = person.overlay_fullscreen("hedon_teleporter", /atom/movable/screen/fullscreen/tiled/flash/black)
+		person.overlay_fullscreen("hedon_teleporter", /atom/movable/screen/fullscreen/tiled/flash/black)
 		var/turf/chosen_location = GLOB.hedon_teleporters[input(person, "Where do you want to go?", "Going somewhere.") as null|anything in (GLOB.hedon_teleporters - "[get_area(src)]")]
 		if(chosen_location)
 			person.forceMove(get_step(chosen_location, chosen_location.dir))
