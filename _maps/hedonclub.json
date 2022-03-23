@@ -1,0 +1,30 @@
+{
+   "map_name":"Hedon Club",
+   "map_path":"/map_files/HedonClub",
+   "map_file":[
+      "hedonbelow.dmm",
+      "hedonup.dmm"
+   ],
+   "station_ruin_budget":0,
+   "space_ruin_levels":0,
+   "space_empty_levels":0,
+   "shuttles":{
+      "cargo":"cargo_box",
+      "ferry":"ferry_fancy",
+      "whiteship":"whiteship_box",
+      "emergency":"emergency_box"
+   },
+   "traits":[
+      {
+         "Up":1,
+		 "Station":0,
+         "Linkage":null,
+         "Gravity":true
+      },
+      {
+         "Down":-1,
+         "Linkage":null,
+         "Gravity":true
+      }
+	]
+}
