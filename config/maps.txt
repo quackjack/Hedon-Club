@@ -18,47 +18,63 @@ endmap
 map boxstation
 	default
 	#voteweight 1.5
+	disabled
 endmap
 
 map metastation
 	minplayers 25
 	#voteweight 0.5
+	disabled
 endmap
 
 map pubbystation
+	disabled
 endmap
 
 map omegastation
 	maxplayers 35
+	disabled
 endmap
 
 map deltastation
 	minplayers 50
+	disabled
 endmap
 
 map smexistation
 	minplayers 25
+	disabled
 endmap
 
 map runtimestation
+	disabled
 endmap
 
 map spookystation
 	minplayers 150
+	disabled
 endmap
 
 map festivestation
 	minplayers 150
+	disabled
 endmap
 
 map multiz_debug
+	disabled
 endmap
 
 map kilostation
+	disabled
 endmap
 
 map smolstation
+	disabled
 endmap
 
 map snaxiteststation
+	disabled
+endmap
+
+map hedonclub
 endmap
